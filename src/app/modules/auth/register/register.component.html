@@ -1,0 +1,91 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5">
+  <div class="card shadow" style="width: 560px">
+    <div class="card-body p-5">
+
+      <div class="text-center mb-4">
+        <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+        <h4 class="fw-bold">Crear Cuenta</h4>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Nombre</label>
+            <input type="text" formControlName="nombre" class="form-control"
+                   [class.is-invalid]="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+            <div class="invalid-feedback">Requerido</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Apellido</label>
+            <input type="text" formControlName="apellido" class="form-control"
+                   [class.is-invalid]="form.get('apellido')?.invalid && form.get('apellido')?.touched">
+            <div class="invalid-feedback">Requerido</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Carnet</label>
+            <input type="text" formControlName="carnet" class="form-control"
+                   [class.is-invalid]="form.get('carnet')?.invalid && form.get('carnet')?.touched">
+            <div class="invalid-feedback">Requerido</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Teléfono</label>
+            <input type="text" formControlName="numero" class="form-control"
+                   [class.is-invalid]="form.get('numero')?.invalid && form.get('numero')?.touched">
+            <div class="invalid-feedback">Requerido</div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Correo electrónico</label>
+          <input type="email" formControlName="email" class="form-control"
+                 [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched">
+          <div class="invalid-feedback">Correo inválido</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Rol</label>
+          <select formControlName="role" class="form-select"
+                  [class.is-invalid]="form.get('role')?.invalid && form.get('role')?.touched">
+            <option value="">Seleccionar rol</option>
+            <option value="director">Director</option>
+            <option value="profesor">Profesor</option>
+            <option value="padre">Padre de Familia</option>
+          </select>
+          <div class="invalid-feedback">Selecciona un rol</div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Contraseña</label>
+            <input type="password" formControlName="password" class="form-control"
+                   [class.is-invalid]="form.get('password')?.invalid && form.get('password')?.touched">
+            <div class="invalid-feedback">Mínimo 6 caracteres</div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Confirmar contraseña</label>
+            <input type="password" formControlName="password_confirmation" class="form-control">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ loading ? 'Registrando...' : 'Crear Cuenta' }}
+        </button>
+      </form>
+
+      <div class="text-center mt-3">
+        <a routerLink="/auth/login" class="text-muted small">
+          <i class="fas fa-arrow-left"></i> Ya tengo cuenta
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>

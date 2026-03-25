@@ -1,0 +1,114 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h5 class="fw-bold mb-0"><i class="fas fa-store text-primary me-2"></i>Inventario Tienda</h5>
+  <button (click)="openCreate()" class="btn btn-primary btn-sm">
+    <i class="fas fa-plus"></i> Nuevo Ítem
+  </button>
+</div>
+
+<!-- Formulario crear/editar -->
+<div *ngIf="showForm" class="card mb-4 border-primary">
+  <div class="card-header fw-bold">{{ editItem ? 'Editar Ítem' : 'Nuevo Ítem' }}</div>
+  <div class="card-body">
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Tipo</label>
+          <select formControlName="tipo" class="form-select" [disabled]="!!editItem">
+            <option value="skin">Skin</option>
+            <option value="sticker">Sticker</option>
+          </select>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label fw-bold">Nombre *</label>
+          <input type="text" formControlName="nombre" class="form-control" [class.is-invalid]="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+          <div class="invalid-feedback">Requerido</div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Categoría</label>
+          <input type="text" formControlName="categoria" class="form-control" placeholder="animales, espacio...">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Imagen *</label>
+          <input type="text" formControlName="imagen" class="form-control" placeholder="archivo.png">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-bold">Precio</label>
+          <input type="number" formControlName="precio" class="form-control" min="0">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Rareza</label>
+          <select formControlName="rareza" class="form-select">
+            <option value="comun">Común</option>
+            <option value="raro">Raro</option>
+            <option value="legendario">Legendario</option>
+          </select>
+        </div>
+        <div class="col-md-3" *ngIf="isSticker">
+          <label class="form-label fw-bold">PDF Template</label>
+          <input type="text" formControlName="pdf_template" class="form-control" placeholder="template.pdf">
+        </div>
+        <div class="col-md-12">
+          <label class="form-label fw-bold">Descripción</label>
+          <input type="text" formControlName="descripcion" class="form-control">
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary" [disabled]="saving">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+          {{ saving ? 'Guardando...' : 'Guardar' }}
+        </button>
+        <button type="button" (click)="showForm = false" class="btn btn-outline-secondary">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+<div *ngIf="!loading" class="card">
+  <div class="card-body">
+    <ul class="nav nav-tabs mb-3">
+      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#skins-prof"><i class="fas fa-user-circle text-primary"></i> Skins <span class="badge bg-primary ms-1">{{ skins.length }}</span></a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#stickers-prof"><i class="fas fa-star text-warning"></i> Stickers <span class="badge bg-warning text-dark ms-1">{{ stickers.length }}</span></a></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="skins-prof">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light"><tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Rareza</th><th>Precio</th><th>Estado</th><th>Editar</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of skins">
+                <td><img [src]="'/images/avatares/' + s.imagen" width="40" height="40" class="rounded-circle border"></td>
+                <td><strong>{{ s.nombre }}</strong><br><small class="text-muted">{{ s.descripcion }}</small></td>
+                <td>{{ s.categoria ?? '—' }}</td>
+                <td><span class="badge" [class.bg-secondary]="s.rareza==='comun'" [class.bg-primary]="s.rareza==='raro'" [class.bg-warning]="s.rareza==='legendario'">{{ s.rareza | titlecase }}</span></td>
+                <td><i class="fas fa-coins text-warning"></i> {{ s.precio }}</td>
+                <td><span class="badge" [class.bg-success]="s.activo" [class.bg-danger]="!s.activo">{{ s.activo ? 'Activo' : 'Inactivo' }}</span></td>
+                <td><button (click)="openEdit('skin', s)" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tab-pane fade" id="stickers-prof">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light"><tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Rareza</th><th>Precio</th><th>Estado</th><th>Editar</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let s of stickers">
+                <td><img [src]="'/images/stickers/' + s.imagen" width="40" height="40" class="rounded border"></td>
+                <td><strong>{{ s.nombre }}</strong><br><small class="text-muted">{{ s.descripcion }}</small></td>
+                <td>{{ s.categoria ?? '—' }}</td>
+                <td><span class="badge" [class.bg-secondary]="s.rareza==='comun'" [class.bg-primary]="s.rareza==='raro'" [class.bg-warning]="s.rareza==='legendario'">{{ s.rareza | titlecase }}</span></td>
+                <td><i class="fas fa-coins text-warning"></i> {{ s.precio }}</td>
+                <td><span class="badge" [class.bg-success]="s.activo" [class.bg-danger]="!s.activo">{{ s.activo ? 'Activo' : 'Inactivo' }}</span></td>
+                <td><button (click)="openEdit('sticker', s)" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,51 @@
+<h5 class="fw-bold mb-4"><i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard Profesor</h5>
+
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+<div *ngIf="!loading">
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <app-stat-card icon="users" [value]="estudiantes.length" label="Estudiantes" color="primary"></app-stat-card>
+    </div>
+    <div class="col-md-3">
+      <app-stat-card icon="chart-line" [value]="promedioXP" label="Promedio XP" color="warning"></app-stat-card>
+    </div>
+    <div class="col-md-3">
+      <app-stat-card icon="coins" [value]="totalMonedas" label="Monedas Totales" color="success"></app-stat-card>
+    </div>
+    <div class="col-md-3">
+      <app-stat-card icon="fire" [value]="rachaMax" label="Racha Máxima" color="danger"></app-stat-card>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header fw-bold">
+      <i class="fas fa-users text-primary me-2"></i>Mis Estudiantes
+    </div>
+    <div class="card-body">
+      <div *ngIf="estudiantes.length === 0" class="text-center py-4 text-muted">
+        <i class="fas fa-users fa-3x mb-3"></i>
+        <p>No tienes estudiantes asignados</p>
+      </div>
+      <div class="row g-3">
+        <div *ngFor="let e of estudiantes" class="col-md-6">
+          <div class="card border-start border-primary border-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-1">{{ e.nombre }} {{ e.apellido }}</h6>
+                  <div class="d-flex gap-2">
+                    <span class="badge bg-warning">{{ e.monedas }} monedas</span>
+                    <span class="badge bg-info">Nivel {{ e.nivel }}</span>
+                    <span class="badge bg-success">{{ e.experiencia }} XP</span>
+                  </div>
+                </div>
+                <img [src]="'/images/avatares/' + e.avatar + '.png'" width="45" height="45" class="rounded-circle border">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

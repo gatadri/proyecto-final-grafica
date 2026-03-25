@@ -1,0 +1,30 @@
+<h5 class="fw-bold mb-4"><i class="fas fa-tasks text-primary me-2"></i>Mis Tareas</h5>
+
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+<div *ngIf="!loading" class="card">
+  <div class="card-body">
+    <div *ngIf="tareas.length === 0" class="text-center py-4 text-muted">
+      <i class="fas fa-tasks fa-3x mb-3"></i><p>No hay tareas creadas</p>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle" *ngIf="tareas.length > 0">
+        <thead class="table-light">
+          <tr><th>Título</th><th>Tipo</th><th>Ejercicios</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of tareas">
+            <td><strong>{{ t.titulo }}</strong><br><small class="text-muted">{{ t.descripcion }}</small></td>
+            <td><span class="badge bg-info">{{ t.tipo_ejercicio }}</span></td>
+            <td>{{ t.ejercicios?.length ?? 0 }}</td>
+            <td>
+              <button (click)="eliminar(t.id)" class="btn btn-sm btn-outline-danger">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

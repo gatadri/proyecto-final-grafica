@@ -1,0 +1,31 @@
+<div class="sidebar d-flex flex-column" id="sidebar">
+  <div class="sidebar-header text-center">
+    <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+    <h5 class="mb-0">Sistema Educativo</h5>
+    <small>{{ auth.getUser()?.role | titlecase }}</small>
+  </div>
+
+  <nav class="sidebar-menu flex-grow-1">
+    <a *ngFor="let item of menuItems"
+       [routerLink]="item.route"
+       routerLinkActive="active"
+       class="menu-item">
+      <i class="fas fa-{{ item.icon }}"></i> {{ item.label }}
+    </a>
+  </nav>
+
+  <div class="user-info">
+    <div class="d-flex align-items-center mb-2">
+      <div class="user-avatar me-2">
+        <i class="fas fa-user"></i>
+      </div>
+      <div>
+        <div class="fw-bold small">{{ auth.getUser()?.nombre }}</div>
+        <small class="opacity-75">{{ auth.getUser()?.email }}</small>
+      </div>
+    </div>
+    <button (click)="logout()" class="logout-btn w-100 border-0">
+      <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+    </button>
+  </div>
+</div>

@@ -1,0 +1,74 @@
+<h5 class="fw-bold mb-4"><i class="fas fa-store text-primary me-2"></i>Inventario Tienda</h5>
+
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+<div *ngIf="!loading" class="card">
+  <div class="card-body">
+    <ul class="nav nav-tabs mb-4" id="invTabs">
+      <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#skins-dir">
+          <i class="fas fa-user-circle text-primary"></i> Skins
+          <span class="badge bg-primary ms-1">{{ skins.length }}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#stickers-dir">
+          <i class="fas fa-star text-warning"></i> Stickers
+          <span class="badge bg-warning text-dark ms-1">{{ stickers.length }}</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="skins-dir">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Rareza</th><th>Precio</th><th>Estado</th><th>Acción</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of skins">
+                <td><img [src]="'/images/avatares/' + s.imagen" width="40" height="40" class="rounded-circle border"></td>
+                <td><strong>{{ s.nombre }}</strong></td>
+                <td>{{ s.categoria ?? '—' }}</td>
+                <td><span class="badge" [class.bg-secondary]="s.rareza==='comun'" [class.bg-primary]="s.rareza==='raro'" [class.bg-warning]="s.rareza==='legendario'">{{ s.rareza | titlecase }}</span></td>
+                <td><i class="fas fa-coins text-warning"></i> {{ s.precio }}</td>
+                <td><span class="badge" [class.bg-success]="s.activo" [class.bg-danger]="!s.activo">{{ s.activo ? 'Activo' : 'Inactivo' }}</span></td>
+                <td>
+                  <button (click)="toggle('skin', s.id)" class="btn btn-sm" [class.btn-outline-danger]="s.activo" [class.btn-outline-success]="!s.activo">
+                    <i class="fas" [class.fa-eye-slash]="s.activo" [class.fa-eye]="!s.activo"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="stickers-dir">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Rareza</th><th>Precio</th><th>Estado</th><th>Acción</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of stickers">
+                <td><img [src]="'/images/stickers/' + s.imagen" width="40" height="40" class="rounded border"></td>
+                <td><strong>{{ s.nombre }}</strong></td>
+                <td>{{ s.categoria ?? '—' }}</td>
+                <td><span class="badge" [class.bg-secondary]="s.rareza==='comun'" [class.bg-primary]="s.rareza==='raro'" [class.bg-warning]="s.rareza==='legendario'">{{ s.rareza | titlecase }}</span></td>
+                <td><i class="fas fa-coins text-warning"></i> {{ s.precio }}</td>
+                <td><span class="badge" [class.bg-success]="s.activo" [class.bg-danger]="!s.activo">{{ s.activo ? 'Activo' : 'Inactivo' }}</span></td>
+                <td>
+                  <button (click)="toggle('sticker', s.id)" class="btn btn-sm" [class.btn-outline-danger]="s.activo" [class.btn-outline-success]="!s.activo">
+                    <i class="fas" [class.fa-eye-slash]="s.activo" [class.fa-eye]="!s.activo"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
