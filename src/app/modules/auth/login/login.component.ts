@@ -18,19 +18,18 @@ export class LoginComponent {
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.form = this.fb.group({
-      email:    ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      email:    ['', /*[Validators.required, Validators.email]*/],
+      password: ['', /*Validators.required*/]
     });
   }
 
   submit(): void {
-    if (this.form.invalid) return;
-    this.loading = true;
-    this.error = '';
+    // if (this.form.invalid) return;
+    // this.loading = true;
+    // this.error = '';
 
-    const { email, password } = this.form.value;
+    // const { email, password } = this.form.value;
 
-    // TEMPORAL: Comentando validación real para usar usuarios falsos
     // this.auth.login(email, password).subscribe({
     //   next: res => {
     //     const role = res.user.role;
@@ -41,27 +40,26 @@ export class LoginComponent {
     //     this.loading = false;
     //   }
     // });
-
-    // Usuarios falsos para testing
-    let role = '';
-    if (email === 'director@test.com' && password === '1234') {
-      role = 'director';
-    } else if (email === 'profesor@test.com' && password === '1234') {
-      role = 'profesor';
-    } else if (email === 'padre@test.com' && password === '1234') {
-      role = 'padre';
-    } else {
-      this.error = 'Usuario o contraseña incorrectos';
-      this.loading = false;
-      return;
-    }
-
-    this.loading = false;
-    this.router.navigate([`/${role}/dashboard`]);
   }
 
-  quickLogin(email: string, password: string): void {
-    this.form.patchValue({ email, password });
-    this.submit();
+  loginAsDirector(): void {
+    const fakeUser: any = { id: 1, name: 'Director Test', nombre: 'Director', apellido: 'Test', email: 'director@test.com', role: 'director', activo: true };
+    localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('user', JSON.stringify(fakeUser));
+    this.router.navigate(['/director/dashboard']);
+  }
+
+  loginAsProfesor(): void {
+    const fakeUser: any = { id: 2, name: 'Profesor Test', nombre: 'Profesor', apellido: 'Test', email: 'profesor@test.com', role: 'profesor', activo: true };
+    localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('user', JSON.stringify(fakeUser));
+    this.router.navigate(['/profesor/dashboard']);
+  }
+
+  loginAsPadre(): void {
+    const fakeUser: any = { id: 3, name: 'Padre Test', nombre: 'Padre', apellido: 'Test', email: 'padre@test.com', role: 'padre', activo: true };
+    localStorage.setItem('token', 'fake-token');
+    localStorage.setItem('user', JSON.stringify(fakeUser));
+    this.router.navigate(['/padre/dashboard']);
   }
 }

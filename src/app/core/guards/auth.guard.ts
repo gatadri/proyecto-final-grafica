@@ -7,10 +7,9 @@ export class AuthGuard implements CanActivate {
   constructor(private auth: AuthService, private router: Router) {}
 
   canActivate(): boolean {
-    // TEMPORAL: Comentando validación para testing
     // if (this.auth.isLoggedIn()) return true;
     // this.router.navigate(['/auth/login']);
     // return false;
-    return true; // Permitir acceso temporalmente
+    return true;
   }
 }

@@ -18,19 +18,18 @@ export class NinoLoginComponent {
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.form = this.fb.group({
-      nombre: ['', Validators.required],
-      pin:    ['', [Validators.required, Validators.pattern(/^\d{4}$/)]]
+      nombre: ['', /*Validators.required*/],
+      pin:    ['', /*[Validators.required, Validators.pattern(/^\d{4}$/)]*/]
     });
   }
 
   submit(): void {
-    if (this.form.invalid) return;
-    this.loading = true;
-    this.error = '';
+    // if (this.form.invalid) return;
+    // this.loading = true;
+    // this.error = '';
 
-    const { nombre, pin } = this.form.value;
+    // const { nombre, pin } = this.form.value;
 
-    // TEMPORAL: Comentando validación real para usar usuarios falsos
     // this.auth.ninoLogin(nombre, pin).subscribe({
     //   next: () => this.router.navigate(['/nino/dashboard']),
     //   error: err => {
@@ -38,19 +37,11 @@ export class NinoLoginComponent {
     //     this.loading = false;
     //   }
     // });
-
-    // Usuario falso para testing
-    if (nombre === 'Juan' && pin === '1234') {
-      this.loading = false;
-      this.router.navigate(['/nino/dashboard']);
-    } else {
-      this.error = 'Nombre o PIN incorrecto';
-      this.loading = false;
-    }
   }
 
-  quickLogin(nombre: string, pin: string): void {
-    this.form.patchValue({ nombre, pin });
-    this.submit();
+  loginAsNino(): void {
+    const fakeNino: any = { id: 1, nombre: 'Nino', apellido: 'Test', pin: '1234', nivel: 1, experiencia: 0, monedas: 100, avatar: 'default', racha_dias: 0, ultima_actividad: null };
+    localStorage.setItem('nino', JSON.stringify(fakeNino));
+    this.router.navigate(['/nino/dashboard']);
   }
 }

@@ -20,17 +20,18 @@ export class AuthService {
   // ── Usuarios (director / profesor / padre) ────────────────────────────────
 
   login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
-      tap(res => {
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('user', JSON.stringify(res.user));
-        this.userSubject.next(res.user);
-      })
-    );
+    // return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
+    //   tap(res => {
+    //     localStorage.setItem('token', res.token);
+    //     localStorage.setItem('user', JSON.stringify(res.user));
+    //     this.userSubject.next(res.user);
+    //   })
+    // );
+    return new Observable(); // dummy
   }
 
   logout(): void {
-    this.http.post(`${this.apiUrl}/logout`, {}).subscribe();
+    // this.http.post(`${this.apiUrl}/logout`, {}).subscribe();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.userSubject.next(null);
@@ -40,12 +41,13 @@ export class AuthService {
   // ── Niño (por PIN) ────────────────────────────────────────────────────────
 
   ninoLogin(nombre: string, pin: string): Observable<NinoLoginResponse> {
-    return this.http.post<NinoLoginResponse>(`${this.apiUrl}/nino/login`, { nombre, pin }).pipe(
-      tap(res => {
-        localStorage.setItem('nino', JSON.stringify(res.nino));
-        this.ninoSubject.next(res.nino);
-      })
-    );
+    // return this.http.post<NinoLoginResponse>(`${this.apiUrl}/nino/login`, { nombre, pin }).pipe(
+    //   tap(res => {
+    //     localStorage.setItem('nino', JSON.stringify(res.nino));
+    //     this.ninoSubject.next(res.nino);
+    //   })
+    // );
+    return new Observable(); // dummy
   }
 
   ninoLogout(): void {

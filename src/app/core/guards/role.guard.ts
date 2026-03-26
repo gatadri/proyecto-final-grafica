@@ -7,7 +7,6 @@ export class RoleGuard implements CanActivate {
   constructor(private auth: AuthService, private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot): boolean {
-    // TEMPORAL: Comentando validación de roles para testing
     // const expectedRoles: string[] = route.data['roles'] ?? [];
     // const userRole = this.auth.getRole();
 
@@ -15,6 +14,6 @@ export class RoleGuard implements CanActivate {
 
     // this.router.navigate(['/auth/login']);
     // return false;
-    return true; // Permitir acceso temporalmente
+    return true;
   }
 }
