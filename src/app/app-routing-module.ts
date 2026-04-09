@@ -3,9 +3,10 @@ import { RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { RoleGuard } from './core/guards/role.guard';
 import { NinoGuard } from './core/guards/nino.guard';
+import { LandingComponent } from './landing/landing.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
+  { path: '', component: LandingComponent },
 
   // Auth
   {
@@ -44,7 +45,7 @@ const routes: Routes = [
     loadChildren: () => import('./modules/nino/nino.module').then(m => m.NinoModule)
   },
 
-  { path: '**', redirectTo: 'auth/login' }
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({

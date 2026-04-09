@@ -1,26 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/services/api.service';
-import { Skin, Sticker } from '../../../core/models';
+import { MockDataService } from '../../../core/services/mock-data.service';
 
 @Component({ selector: 'app-inventario-director', standalone: true, imports: [CommonModule], templateUrl: './inventario-director.component.html' })
 export class InventarioDirectorComponent implements OnInit {
-  skins: Skin[] = [];
-  stickers: Sticker[] = [];
+  skins: any[]    = [];
+  stickers: any[] = [];
   loading = true;
+  tab: 'skins' | 'stickers' = 'skins';
 
-  constructor(private api: ApiService) {}
-
+  constructor(private mock: MockDataService) {}
   ngOnInit(): void { this.load(); }
-
   load(): void {
-    this.api.get<{ skins: Skin[], stickers: Sticker[] }>('inventario').subscribe({
-      next: data => { this.skins = data.skins; this.stickers = data.stickers; this.loading = false; },
-      error: ()  => { this.loading = false; }
-    });
+    const inv = this.mock.getInventario();
+    this.skins    = inv.skins;
+    this.stickers = inv.stickers;
+    this.loading  = false;
   }
-
   toggle(tipo: string, id: number): void {
-    this.api.patch(`inventario/${tipo}/${id}/toggle`).subscribe(() => this.load());
+    this.mock.toggleInventario(tipo, id);
+    this.load();
   }
 }

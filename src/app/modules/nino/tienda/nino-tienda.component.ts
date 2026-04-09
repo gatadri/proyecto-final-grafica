@@ -18,53 +18,51 @@ export class NinoTiendaComponent implements OnInit {
 
   ngOnInit(): void {
     this.nino = this.auth.getNino()!;
-    this.api.get<any>(`nino/${this.nino.pin}/tienda`).subscribe({
-      next: data => {
-        this.skins    = data.skins_disponibles ?? [];
-        this.stickers = data.stickers_disponibles ?? [];
-        this.skinsCompradas    = data.skins_nino?.map((s: any) => s.id) ?? [];
-        this.stickersComprados = data.stickers_nino?.map((s: any) => s.id) ?? [];
-        this.loading = false;
-      },
-      error: () => this.loading = false
-    });
+    // Datos hardcodeados para tienda
+    this.skins = [
+      { id: 1, nombre: 'Ninja', descripcion: 'Skin de ninja', imagen: 'ninja.png', precio: 50, rareza: 'raro', categoria: 'avatar', activo: true },
+      { id: 2, nombre: 'Pirata', descripcion: 'Skin de pirata', imagen: 'pirata.png', precio: 60, rareza: 'raro', categoria: 'avatar', activo: true },
+      { id: 3, nombre: 'Superhéroe', descripcion: 'Skin de superhéroe', imagen: 'superheroe.png', precio: 70, rareza: 'legendario', categoria: 'avatar', activo: true }
+    ];
+    this.stickers = [
+      { id: 1, nombre: 'Estrella', descripcion: 'Sticker de estrella', imagen: 'estrella.png', precio: 10, rareza: 'comun', categoria: 'decoracion', pdf_template: null, activo: true },
+      { id: 2, nombre: 'Corazón', descripcion: 'Sticker de corazón', imagen: 'corazon.png', precio: 15, rareza: 'comun', categoria: 'decoracion', pdf_template: null, activo: true },
+      { id: 3, nombre: 'Trofeo', descripcion: 'Sticker de trofeo', imagen: 'trofeo.png', precio: 20, rareza: 'raro', categoria: 'decoracion', pdf_template: null, activo: true }
+    ];
+    // Simular compras previas
+    this.skinsCompradas = [1]; // Ejemplo
+    this.stickersComprados = [2];
+    this.loading = false;
   }
 
   tieneSkin(id: number): boolean { return this.skinsCompradas.includes(id); }
   tieneSticker(id: number): boolean { return this.stickersComprados.includes(id); }
 
   comprarSkin(skin: Skin): void {
-    this.api.post<any>(`nino/${this.nino.pin}/comprar-skin`, { skin_id: skin.id }).subscribe({
-      next: res => {
-        if (res.success) {
-          this.skinsCompradas.push(skin.id);
-          this.nino.monedas = res.monedas_restantes;
-          this.mostrarMensaje('success', res.message);
-          localStorage.setItem('nino', JSON.stringify(this.nino));
-        } else {
-          this.mostrarMensaje('danger', res.message);
-        }
-      }
-    });
+    if (this.nino.monedas < skin.precio) {
+      this.mostrarMensaje('danger', 'No tienes suficientes monedas');
+      return;
+    }
+    this.skinsCompradas.push(skin.id);
+    this.nino.monedas -= skin.precio;
+    this.mostrarMensaje('success', `¡Compraste ${skin.nombre}!`);
+    localStorage.setItem('nino', JSON.stringify(this.nino));
   }
 
   comprarSticker(sticker: Sticker): void {
-    this.api.post<any>(`nino/${this.nino.pin}/comprar-sticker`, { sticker_id: sticker.id }).subscribe({
-      next: res => {
-        if (res.success) {
-          this.stickersComprados.push(sticker.id);
-          this.nino.monedas = res.monedas_restantes;
-          this.mostrarMensaje('success', res.message);
-          localStorage.setItem('nino', JSON.stringify(this.nino));
-        } else {
-          this.mostrarMensaje('danger', res.message);
-        }
-      }
-    });
+    if (this.nino.monedas < sticker.precio) {
+      this.mostrarMensaje('danger', 'No tienes suficientes monedas');
+      return;
+    }
+    this.stickersComprados.push(sticker.id);
+    this.nino.monedas -= sticker.precio;
+    this.mostrarMensaje('success', `¡Compraste ${sticker.nombre}!`);
+    localStorage.setItem('nino', JSON.stringify(this.nino));
   }
 
   descargarSticker(id: number): void {
-    window.open(`http://localhost:8000/nino/${this.nino.pin}/descargar-sticker/${id}`, '_blank');
+    // Simular descarga
+    this.mostrarMensaje('success', 'Sticker descargado');
   }
 
   private mostrarMensaje(tipo: string, texto: string): void {

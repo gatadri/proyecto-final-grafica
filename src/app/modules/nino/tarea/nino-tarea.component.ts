@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ApiService } from '../../../core/services/api.service';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { Ejercicio, Nino, Tarea } from '../../../core/models';
+import { MockDataService } from '../../../core/services/mock-data.service';
+import { AvatarStateService } from '../../../core/services/avatar-state.service';
 
-@Component({ selector: 'app-nino-tarea', standalone: true, imports: [CommonModule], templateUrl: './nino-tarea.component.html' })
+@Component({ selector: 'app-nino-tarea', standalone: true, imports: [CommonModule, RouterModule], templateUrl: './nino-tarea.component.html' })
 export class NinoTareaComponent implements OnInit {
-  nino!: Nino;
-  tarea!: Tarea;
-  ejercicios: Ejercicio[] = [];
+  nino: any;
+  tarea: any;
+  ejercicios: any[] = [];
   ejercicioActual = 0;
   respuestaSeleccionada = '';
   feedback: { correcto: boolean; mensaje: string } | null = null;
@@ -18,58 +18,53 @@ export class NinoTareaComponent implements OnInit {
   completada = false;
   loading = true;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private api: ApiService,
-    private auth: AuthService
-  ) {}
+  constructor(private route: ActivatedRoute, private router: Router,
+              private auth: AuthService, private mock: MockDataService,
+              private avatarState: AvatarStateService) {}
 
   ngOnInit(): void {
-    this.nino = this.auth.getNino()!;
-    const tareaId = this.route.snapshot.paramMap.get('id');
-    this.api.get<any>(`nino/${this.nino.pin}/tarea/${tareaId}`).subscribe({
-      next: data => {
-        this.tarea = data.tarea;
-        this.ejercicios = data.tarea.ejercicios ?? [];
-        this.loading = false;
-      },
-      error: () => this.router.navigate(['/nino/dashboard'])
-    });
+    this.avatarState.resetExpression();
+    this.nino = this.auth.getNino();
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.tarea = this.mock.getTareaById(id);
+    if (!this.tarea) { this.router.navigate(['/nino/dashboard']); return; }
+    this.ejercicios = this.tarea.ejercicios ?? [];
+    this.loading = false;
   }
 
-  get ejercicio(): Ejercicio { return this.ejercicios[this.ejercicioActual]; }
+  get ejercicio(): any { return this.ejercicios[this.ejercicioActual]; }
   get progreso(): number { return Math.round((this.ejercicioActual / this.ejercicios.length) * 100); }
 
   responder(): void {
-    if (!this.respuestaSeleccionada) return;
+    if (!this.respuestaSeleccionada || this.feedback) return;
     this.intentos++;
+    const correcto = this.respuestaSeleccionada === this.ejercicio.respuesta_correcta;
+    const puntos = correcto ? (this.intentos === 1 ? 10 : 5) : 0;
+    const expresión = correcto ? 'feliz' : (Math.random() > 0.5 ? 'enojado' : 'triste');
 
-    this.api.post<any>(`nino/${this.nino.pin}/tarea/${this.tarea.id}/responder`, {
-      respuesta: this.respuestaSeleccionada,
-      ejercicio_id: this.ejercicio.id
-    }).subscribe(res => {
-      this.feedback = {
-        correcto: res.correcto,
-        mensaje: res.correcto ? '¡Correcto! +' + res.puntos + ' puntos' : (this.intentos >= 2 ? 'Respuesta incorrecta' : 'Intenta de nuevo')
-      };
+    this.avatarState.setExpression(expresión);
+    this.feedback = {
+      correcto,
+      mensaje: correcto
+        ? `¡Correcto! +${puntos} puntos`
+        : (this.intentos >= 2 ? `Incorrecto. La respuesta era: ${this.ejercicio.respuesta_correcta}` : 'Intenta de nuevo')
+    };
 
-      if (res.correcto || this.intentos >= 2) {
-        this.puntosTotal += res.puntos ?? 0;
-        setTimeout(() => {
-          this.feedback = null;
-          this.respuestaSeleccionada = '';
-          this.intentos = 0;
-          this.ejercicioActual++;
-          if (this.ejercicioActual >= this.ejercicios.length) {
-            this.completada = true;
-            // Actualizar monedas en local
-            const n = this.auth.getNino()!;
-            n.monedas += this.puntosTotal;
-            localStorage.setItem('nino', JSON.stringify(n));
-          }
-        }, 1500);
-      }
-    });
+    if (correcto || this.intentos >= 2) {
+      this.puntosTotal += puntos;
+      setTimeout(() => {
+        this.feedback = null;
+        this.respuestaSeleccionada = '';
+        this.intentos = 0;
+        this.ejercicioActual++;
+        this.avatarState.resetExpression();
+        if (this.ejercicioActual >= this.ejercicios.length) {
+          this.completada = true;
+          this.mock.completarTarea(this.nino.id, this.tarea.id, this.puntosTotal);
+          const ninoActual = this.mock.getNinoById(this.nino.id);
+          if (ninoActual) localStorage.setItem('nino', JSON.stringify(ninoActual));
+        }
+      }, 1500);
+    }
   }
 }

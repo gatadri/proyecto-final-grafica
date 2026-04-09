@@ -1,0 +1,30 @@
+.avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 96px;
+  padding: 10px;
+  gap: 8px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.avatar-svg {
+  width: 84px;
+  height: 100px;
+  display: block;
+}
+
+.avatar-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #111827;
+  background: #f8fafc;
+  border-radius: 999px;
+  padding: 6px 12px;
+  text-align: center;
+  min-width: 80px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}

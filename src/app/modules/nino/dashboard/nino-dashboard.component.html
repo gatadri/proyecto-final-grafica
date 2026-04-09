@@ -4,12 +4,10 @@
 
   <div *ngIf="!loading && nino" class="row g-4">
 
-    <!-- Perfil del niño -->
+    <!-- Perfil -->
     <div class="col-md-3">
       <div class="card text-center">
         <div class="card-body">
-          <img [src]="'/images/avatares/' + nino.avatar + '.png'" width="90" height="90"
-               class="rounded-circle border border-3 border-warning mb-3">
           <h5 class="fw-bold">¡Hola {{ nino.nombre }}!</h5>
 
           <div class="p-3 rounded mb-3" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)">
@@ -18,7 +16,7 @@
             <small class="text-white">Monedas</small>
           </div>
 
-          <div class="d-flex justify-content-around">
+          <div class="d-flex justify-content-around mb-3">
             <div class="text-center">
               <i class="fas fa-star text-warning"></i>
               <div class="fw-bold">Nivel {{ nino.nivel }}</div>
@@ -30,31 +28,32 @@
               <small class="text-muted">Racha</small>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Accesos rápidos -->
-      <div class="d-grid gap-2 mt-3">
-        <a routerLink="/nino/tienda" class="btn btn-warning fw-bold">
-          <i class="fas fa-store me-2"></i>Tienda
-        </a>
-        <a routerLink="/nino/logros" class="btn btn-success fw-bold">
-          <i class="fas fa-trophy me-2"></i>Mis Logros
-        </a>
-        <a routerLink="/nino/practica" class="btn btn-info fw-bold text-white">
-          <i class="fas fa-dumbbell me-2"></i>Practicar
-        </a>
-        <button (click)="logout()" class="btn btn-outline-light">
-          <i class="fas fa-sign-out-alt me-2"></i>Salir
-        </button>
+          <!-- Barra de progreso tareas -->
+          <div class="mb-3">
+            <small class="text-muted">Tareas: {{ tareasCompletadas }}/{{ totalTareas }}</small>
+            <div class="progress mt-1" style="height:8px">
+              <div class="progress-bar bg-success"
+                   [style.width.%]="totalTareas > 0 ? (tareasCompletadas / totalTareas * 100) : 0"></div>
+            </div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <a routerLink="/nino/tienda"   class="btn btn-warning fw-bold"><i class="fas fa-store me-2"></i>Tienda</a>
+            <a routerLink="/nino/logros"   class="btn btn-success fw-bold"><i class="fas fa-trophy me-2"></i>Mis Logros</a>
+            <a routerLink="/nino/practica" class="btn btn-info fw-bold text-white"><i class="fas fa-dumbbell me-2"></i>Practicar</a>
+            <button (click)="logout()" class="btn btn-outline-secondary"><i class="fas fa-sign-out-alt me-2"></i>Salir</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Tareas -->
+    <!-- Tareas pendientes -->
     <div class="col-md-9">
       <div class="card">
         <div class="card-header fw-bold">
           <i class="fas fa-tasks text-primary me-2"></i>Mis Tareas Pendientes
+          <span class="badge bg-warning ms-2">{{ tareas.length }}</span>
         </div>
         <div class="card-body">
           <div *ngIf="tareas.length === 0" class="text-center py-5">
@@ -67,9 +66,8 @@
               <div>
                 <h6 class="fw-bold mb-1">{{ t.titulo }}</h6>
                 <p class="text-muted mb-1 small">{{ t.descripcion }}</p>
-                <span class="badge bg-info">
-                  <i class="fas fa-calculator me-1"></i>{{ t.tipo_ejercicio }}
-                </span>
+                <span class="badge bg-info">{{ t.tipo_ejercicio }}</span>
+                <span class="badge bg-secondary ms-1">{{ t.ejercicios?.length ?? 0 }} ejercicios</span>
               </div>
               <a [routerLink]="['/nino/tarea', t.id]" class="btn btn-primary btn-lg">
                 <i class="fas fa-play me-1"></i>¡Empezar!

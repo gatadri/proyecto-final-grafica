@@ -1,0 +1,23 @@
+<!-- Avatar flotante en esquina inferior derecha -->
+<div class="avatar-float-container">
+
+  <!-- Selector de avatares -->
+  <div class="avatar-picker" *ngIf="mostrarSelector">
+    <div class="picker-title">Elige tu acompañante</div>
+    <div class="picker-grid">
+      <div *ngFor="let av of avatares"
+           class="picker-item"
+           [class.selected]="av.id === avatarActual"
+           (click)="seleccionar(av.id)">
+        <app-avatar-companion [avatarId]="av.id"></app-avatar-companion>
+      </div>
+    </div>
+  </div>
+
+  <!-- Avatar actual + botón cambiar -->
+  <div class="avatar-current" (click)="mostrarSelector = !mostrarSelector">
+    <app-avatar-companion [avatarId]="avatarActual" [displayName]="nombreNino"></app-avatar-companion>
+    <div class="change-hint">{{ mostrarSelector ? '✕' : '✏️' }}</div>
+  </div>
+
+</div>

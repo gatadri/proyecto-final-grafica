@@ -28,6 +28,7 @@ export interface Tarea {
   descripcion: string;
   tipo_ejercicio: string;
   ejercicios?: Ejercicio[];
+  ninos?: { id: number; nombre: string; apellido: string }[];
 }
 
 export interface Ejercicio {

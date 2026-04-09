@@ -1,5 +1,109 @@
 <h5 class="fw-bold mb-4"><i class="fas fa-tasks text-primary me-2"></i>Mis Tareas</h5>
 
+<div class="mb-3" *ngIf="!showForm">
+  <button class="btn btn-primary" (click)="openCreate()">
+    <i class="fas fa-plus me-1"></i> Nueva Tarea
+  </button>
+</div>
+
+<!-- Formulario -->
+<div class="card mb-4" *ngIf="showForm">
+  <div class="card-header fw-bold">{{ editando ? 'Editar Tarea' : 'Nueva Tarea' }}</div>
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()">
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <label class="form-label">Título *</label>
+          <input formControlName="titulo" class="form-control" placeholder="Título de la tarea">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Tipo de ejercicio</label>
+          <select formControlName="tipo_ejercicio" class="form-select">
+            <option value="multiple">Opción múltiple</option>
+            <option value="completar">Completar</option>
+            <option value="verdadero_falso">Verdadero/Falso</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <textarea formControlName="descripcion" class="form-control" rows="2"></textarea>
+      </div>
+
+      <!-- Asignar estudiantes -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Asignar a estudiantes</label>
+        <div *ngIf="estudiantes.length === 0" class="text-muted small">No tienes estudiantes asignados</div>
+        <div class="row g-2">
+          <div class="col-md-4" *ngFor="let nino of estudiantes">
+            <div class="form-check border rounded p-2"
+                 [class.border-primary]="isNinoSelected(nino.id)"
+                 [class.bg-light]="isNinoSelected(nino.id)">
+              <input class="form-check-input" type="checkbox"
+                     [id]="'nino-' + nino.id"
+                     [checked]="isNinoSelected(nino.id)"
+                     (change)="toggleNino(nino.id, $any($event.target).checked)">
+              <label class="form-check-label" [for]="'nino-' + nino.id">
+                <strong>{{ nino.nombre }} {{ nino.apellido }}</strong>
+                <br><small class="text-muted">Grado {{ nino.grado }} · Nivel {{ nino.nivel }}</small>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ejercicios -->
+      <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <label class="form-label mb-0 fw-bold">Ejercicios</label>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="agregarEjercicio()">
+            <i class="fas fa-plus"></i> Agregar ejercicio
+          </button>
+        </div>
+
+        <div formArrayName="ejercicios">
+          <div *ngFor="let ej of ejercicios.controls; let i = index" [formGroupName]="i"
+               class="border rounded p-3 mb-2 bg-light">
+            <div class="d-flex justify-content-between mb-2">
+              <strong>Ejercicio {{ i + 1 }}</strong>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarEjercicio(i)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            <div class="mb-2">
+              <input formControlName="pregunta" class="form-control" placeholder="Pregunta *">
+            </div>
+            <div class="mb-2">
+              <input formControlName="opciones" class="form-control"
+                     placeholder="Opciones separadas por coma (ej: Opción A, Opción B, Opción C)">
+            </div>
+            <div class="mb-2">
+              <input formControlName="respuesta_correcta" class="form-control" placeholder="Respuesta correcta *">
+            </div>
+            <div>
+              <input formControlName="explicacion" class="form-control" placeholder="Explicación (opcional)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success" [disabled]="saving || form.invalid">
+          <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+          Guardar
+        </button>
+        <button type="button" class="btn btn-secondary" (click)="showForm = false">Cancelar</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Lista -->
 <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
 
 <div *ngIf="!loading" class="card">
@@ -10,14 +114,18 @@
     <div class="table-responsive">
       <table class="table table-hover align-middle" *ngIf="tareas.length > 0">
         <thead class="table-light">
-          <tr><th>Título</th><th>Tipo</th><th>Ejercicios</th><th>Acciones</th></tr>
+          <tr><th>Título</th><th>Tipo</th><th>Ejercicios</th><th>Estudiantes</th><th>Acciones</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let t of tareas">
             <td><strong>{{ t.titulo }}</strong><br><small class="text-muted">{{ t.descripcion }}</small></td>
             <td><span class="badge bg-info">{{ t.tipo_ejercicio }}</span></td>
             <td>{{ t.ejercicios?.length ?? 0 }}</td>
+            <td><small>{{ getNombresNinos(t.nino_ids) || 'Sin asignar' }}</small></td>
             <td>
+              <button (click)="openEdit(t)" class="btn btn-sm btn-outline-primary me-1">
+                <i class="fas fa-edit"></i>
+              </button>
               <button (click)="eliminar(t.id)" class="btn btn-sm btn-outline-danger">
                 <i class="fas fa-trash"></i>
               </button>

@@ -29,7 +29,7 @@
           <div class="invalid-feedback">La contraseña es requerida</div>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100" [disabled]="loading">
+        <button type="submit" class="btn btn-primary w-100" [disabled]="loading || form.invalid">
           <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
           <i *ngIf="!loading" class="fas fa-sign-in-alt me-2"></i>
           {{ loading ? 'Ingresando...' : 'Iniciar Sesión' }}
@@ -38,25 +38,17 @@
 
       <hr class="my-4">
 
-      <div class="text-center">
-        <a routerLink="/auth/nino-login" class="btn btn-outline-success w-100">
-          <i class="fas fa-child me-2"></i> Soy un Estudiante
-        </a>
-      </div>
-
-      <hr class="my-4">
-
-      <div class="text-center">
-        <p class="text-muted mb-3">Acceso rápido (temporal)</p>
-        <button class="btn btn-outline-primary w-100 mb-2" (click)="loginAsDirector()">
-          <i class="fas fa-user-tie me-2"></i> Login como Director
-        </button>
-        <button class="btn btn-outline-info w-100 mb-2" (click)="loginAsProfesor()">
-          <i class="fas fa-chalkboard-teacher me-2"></i> Login como Profesor
-        </button>
-        <button class="btn btn-outline-warning w-100 mb-2" (click)="loginAsPadre()">
-          <i class="fas fa-user-friends me-2"></i> Login como Padre
-        </button>
+      <div class="row g-2">
+        <div class="col-12">
+          <a routerLink="/" class="btn btn-outline-secondary w-100">
+            <i class="fas fa-home me-2"></i> Página principal
+          </a>
+        </div>
+        <div class="col-12">
+          <a routerLink="/auth/nino-login" class="btn btn-outline-success w-100">
+            <i class="fas fa-child me-2"></i> Soy un Estudiante
+          </a>
+        </div>
       </div>
 
     </div>

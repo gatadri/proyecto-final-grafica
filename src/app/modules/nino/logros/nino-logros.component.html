@@ -6,33 +6,40 @@
 
   <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
 
-  <div *ngIf="!loading" class="row g-3">
-    <div *ngFor="let l of logros" class="col-md-4 col-6">
-      <div class="card text-center h-100">
-        <div class="card-body">
-          <i class="fas fa-{{ l.icono ?? 'medal' }} fa-3x mb-2"
-             [class.text-warning]="l.tipo==='oro'"
-             [class.text-secondary]="l.tipo==='plata'"
-             [class.text-danger]="l.tipo==='bronce'"></i>
-          <h6 class="fw-bold">{{ l.nombre }}</h6>
-          <small class="text-muted">{{ l.descripcion }}</small>
-          <div class="mt-2">
-            <span class="badge"
-              [class.bg-warning]="l.tipo==='oro'"
-              [class.bg-secondary]="l.tipo==='plata'"
-              [class.bg-danger]="l.tipo==='bronce'">
-              {{ l.tipo | titlecase }}
-            </span>
+  <div *ngIf="!loading">
+    <div class="mb-3">
+      <span class="badge bg-success fs-6">{{ logrosObtenidos.length }} obtenidos</span>
+      <span class="badge bg-secondary fs-6 ms-2">{{ todoLogros.length - logrosObtenidos.length }} por desbloquear</span>
+    </div>
+
+    <div class="row g-3">
+      <div *ngFor="let l of todoLogros" class="col-md-4 col-6">
+        <div class="card text-center h-100" [class.border-warning]="tieneLogro(l.id)" [class.opacity-50]="!tieneLogro(l.id)">
+          <div class="card-body">
+            <i class="fas fa-{{ l.icono }} fa-3x mb-2"
+               [class.text-warning]="l.tipo==='oro'    && tieneLogro(l.id)"
+               [class.text-secondary]="l.tipo==='plata' && tieneLogro(l.id)"
+               [class.text-danger]="l.tipo==='bronce'  && tieneLogro(l.id)"
+               [class.text-muted]="!tieneLogro(l.id)"></i>
+            <h6 class="fw-bold">{{ l.nombre }}</h6>
+            <small class="text-muted">{{ l.descripcion }}</small>
+            <div class="mt-2">
+              <span *ngIf="tieneLogro(l.id)" class="badge"
+                [class.bg-warning]="l.tipo==='oro'"
+                [class.bg-secondary]="l.tipo==='plata'"
+                [class.bg-danger]="l.tipo==='bronce'">
+                {{ l.tipo | titlecase }}
+              </span>
+              <span *ngIf="!tieneLogro(l.id)" class="badge bg-light text-dark">
+                <i class="fas fa-lock me-1"></i>Bloqueado
+              </span>
+            </div>
+            <small *ngIf="tieneLogro(l.id)" class="text-muted d-block mt-1">
+              <i class="fas fa-calendar me-1"></i>{{ getFechaLogro(l.id) }}
+            </small>
           </div>
-          <small *ngIf="l.pivot" class="text-muted d-block mt-1">
-            <i class="fas fa-calendar me-1"></i>{{ l.pivot.fecha_obtenido | date:'dd/MM/yyyy' }}
-          </small>
         </div>
       </div>
-    </div>
-    <div *ngIf="logros.length === 0" class="col-12 text-center py-5 text-muted">
-      <i class="fas fa-trophy fa-4x mb-3"></i>
-      <p>Aún no tienes logros. ¡Completa tareas para ganarlos!</p>
     </div>
   </div>
 </div>

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/services/api.service';
-import { Logro } from '../../../core/models';
+import { MockDataService } from '../../../core/services/mock-data.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-logros-padre',
@@ -10,30 +10,36 @@ import { Logro } from '../../../core/models';
   template: `
     <h5 class="fw-bold mb-4"><i class="fas fa-trophy text-warning me-2"></i>Logros de mis Hijos</h5>
     <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
-    <div *ngIf="!loading" class="row g-3">
-      <div *ngFor="let l of logros" class="col-md-4">
-        <div class="card text-center">
-          <div class="card-body">
-            <i class="fas fa-{{ l.icono ?? 'medal' }} fa-2x mb-2"
-               [class.text-warning]="l.tipo==='oro'"
-               [class.text-secondary]="l.tipo==='plata'"
-               [class.text-danger]="l.tipo==='bronce'"></i>
-            <h6>{{ l.nombre }}</h6>
-            <small class="text-muted">{{ l.descripcion }}</small>
+    <div *ngIf="!loading">
+      <div *ngFor="let hijo of hijos" class="mb-4">
+        <h6 class="fw-bold border-bottom pb-2"><i class="fas fa-child text-primary me-2"></i>{{ hijo.nombre }} {{ hijo.apellido }}</h6>
+        <div class="row g-2">
+          <div *ngFor="let l of hijo.logros" class="col-md-4 col-6">
+            <div class="card text-center border-warning">
+              <div class="card-body py-2">
+                <i class="fas fa-{{ l.icono }} fa-2x mb-1"
+                   [class.text-warning]="l.tipo==='oro'"
+                   [class.text-secondary]="l.tipo==='plata'"
+                   [class.text-danger]="l.tipo==='bronce'"></i>
+                <div class="fw-bold small">{{ l.nombre }}</div>
+                <small class="text-muted">{{ l.pivot?.fecha_obtenido }}</small>
+              </div>
+            </div>
           </div>
+          <div *ngIf="hijo.logros.length === 0" class="col-12 text-muted small">Sin logros aún</div>
         </div>
       </div>
     </div>
   `
 })
 export class LogrosPadreComponent implements OnInit {
-  logros: Logro[] = [];
+  hijos: any[] = [];
   loading = true;
-  constructor(private api: ApiService) {}
+  constructor(private mock: MockDataService, private auth: AuthService) {}
   ngOnInit(): void {
-    this.api.get<any>('padre/logros').subscribe({
-      next: d => { this.logros = d.logros ?? d; this.loading = false; },
-      error: () => this.loading = false
-    });
+    const user = this.auth.getUser();
+    const ninos = this.mock.getNinosByPadre(user?.id ?? 4);
+    this.hijos = ninos.map((n: any) => ({ ...n, logros: this.mock.getLogrosNino(n.id) }));
+    this.loading = false;
   }
 }

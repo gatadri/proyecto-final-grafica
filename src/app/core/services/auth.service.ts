@@ -12,42 +12,35 @@ export class AuthService {
   private userSubject = new BehaviorSubject<User | null>(this.loadUser());
   private ninoSubject = new BehaviorSubject<Nino | null>(this.loadNino());
 
-  user$  = this.userSubject.asObservable();
-  nino$  = this.ninoSubject.asObservable();
+  user$ = this.userSubject.asObservable();
+  nino$ = this.ninoSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  // ── Usuarios (director / profesor / padre) ────────────────────────────────
-
   login(email: string, password: string): Observable<AuthResponse> {
-    // return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
-    //   tap(res => {
-    //     localStorage.setItem('token', res.token);
-    //     localStorage.setItem('user', JSON.stringify(res.user));
-    //     this.userSubject.next(res.user);
-    //   })
-    // );
-    return new Observable(); // dummy
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password }).pipe(
+      tap(res => {
+        localStorage.setItem('token', res.token);
+        localStorage.setItem('user', JSON.stringify(res.user));
+        this.userSubject.next(res.user);
+      })
+    );
   }
 
   logout(): void {
-    // this.http.post(`${this.apiUrl}/logout`, {}).subscribe();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this.userSubject.next(null);
     this.router.navigate(['/auth/login']);
   }
 
-  // ── Niño (por PIN) ────────────────────────────────────────────────────────
-
   ninoLogin(nombre: string, pin: string): Observable<NinoLoginResponse> {
-    // return this.http.post<NinoLoginResponse>(`${this.apiUrl}/nino/login`, { nombre, pin }).pipe(
-    //   tap(res => {
-    //     localStorage.setItem('nino', JSON.stringify(res.nino));
-    //     this.ninoSubject.next(res.nino);
-    //   })
-    // );
-    return new Observable(); // dummy
+    return this.http.post<NinoLoginResponse>(`${this.apiUrl}/nino/login`, { nombre, pin }).pipe(
+      tap(res => {
+        localStorage.setItem('nino', JSON.stringify(res.nino));
+        this.ninoSubject.next(res.nino);
+      })
+    );
   }
 
   ninoLogout(): void {
@@ -56,31 +49,12 @@ export class AuthService {
     this.router.navigate(['/auth/nino-login']);
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  getUser(): User | null {
-    return this.userSubject.value;
-  }
-
-  getNino(): Nino | null {
-    return this.ninoSubject.value;
-  }
-
-  isLoggedIn(): boolean {
-    return !!this.getToken();
-  }
-
-  isNinoLoggedIn(): boolean {
-    return !!this.getNino();
-  }
-
-  getRole(): string | null {
-    return this.getUser()?.role ?? null;
-  }
+  getToken(): string | null { return localStorage.getItem('token'); }
+  getUser(): User | null    { return this.userSubject.value; }
+  getNino(): Nino | null    { return this.ninoSubject.value; }
+  isLoggedIn(): boolean     { return !!this.getToken(); }
+  isNinoLoggedIn(): boolean { return !!this.getNino(); }
+  getRole(): string | null  { return this.getUser()?.role ?? null; }
 
   redirectByRole(): void {
     const role = this.getRole();

@@ -1,36 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/services/api.service';
-import { User } from '../../../core/models';
+import { MockDataService } from '../../../core/services/mock-data.service';
 
 @Component({ selector: 'app-usuarios', standalone: true, imports: [CommonModule], templateUrl: './usuarios.component.html' })
 export class UsuariosComponent implements OnInit {
-  usuarios: User[] = [];
+  usuarios: any[] = [];
   loading = true;
-
-  constructor(private api: ApiService) {}
-
-  ngOnInit(): void {
-    this.load();
-  }
-
-  load(): void {
-    this.api.get<User[]>('usuarios').subscribe({
-      next: data => { this.usuarios = data; this.loading = false; },
-      error: ()  => { this.loading = false; }
-    });
-  }
-
-  suspender(id: number): void {
-    this.api.patch(`usuarios/${id}/suspender`).subscribe(() => this.load());
-  }
-
-  activar(id: number): void {
-    this.api.patch(`usuarios/${id}/activar`).subscribe(() => this.load());
-  }
-
-  eliminar(id: number): void {
+  constructor(private mock: MockDataService) {}
+  ngOnInit(): void { this.load(); }
+  load(): void { this.usuarios = this.mock.getUsuarios(); this.loading = false; }
+  suspender(id: number): void { this.mock.suspenderUsuario(id); this.load(); }
+  activar(id: number):   void { this.mock.activarUsuario(id);   this.load(); }
+  eliminar(id: number):  void {
     if (!confirm('¿Eliminar este usuario?')) return;
-    this.api.delete(`usuarios/${id}`).subscribe(() => this.load());
+    this.mock.eliminarUsuario(id); this.load();
   }
 }

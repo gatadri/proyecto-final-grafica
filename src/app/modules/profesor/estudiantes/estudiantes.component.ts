@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../../../core/services/api.service';
-import { Nino } from '../../../core/models';
+import { MockDataService } from '../../../core/services/mock-data.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-estudiantes',
@@ -13,17 +13,21 @@ import { Nino } from '../../../core/models';
     <div *ngIf="!loading" class="row g-3">
       <div *ngFor="let e of estudiantes" class="col-md-6">
         <div class="card border-start border-primary border-3">
-          <div class="card-body d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="mb-1">{{ e.nombre }} {{ e.apellido }}</h6>
-              <div class="d-flex gap-2">
-                <span class="badge bg-warning">{{ e.monedas }} monedas</span>
-                <span class="badge bg-info">Nivel {{ e.nivel }}</span>
-                <span class="badge bg-success">{{ e.experiencia }} XP</span>
-                <span class="badge bg-danger"><i class="fas fa-fire"></i> {{ e.racha_dias }}</span>
-              </div>
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0 fw-bold">{{ e.nombre }} {{ e.apellido }}</h6>
+              <span class="badge bg-secondary">Grado {{ e.grado }}</span>
             </div>
-            <img [src]="'/images/avatares/' + e.avatar + '.png'" width="50" height="50" class="rounded-circle border">
+            <div class="d-flex gap-2 flex-wrap mb-2">
+              <span class="badge bg-warning"><i class="fas fa-coins me-1"></i>{{ e.monedas }}</span>
+              <span class="badge bg-info">Nivel {{ e.nivel }}</span>
+              <span class="badge bg-success">{{ e.experiencia }} XP</span>
+              <span class="badge bg-danger"><i class="fas fa-fire me-1"></i>{{ e.racha_dias }}</span>
+            </div>
+            <div class="progress" style="height:6px">
+              <div class="progress-bar bg-success" [style.width.%]="e.experiencia % 100"></div>
+            </div>
+            <small class="text-muted">{{ getTareasCompletadas(e.id) }} tareas completadas · {{ getLogros(e.id) }} logros</small>
           </div>
         </div>
       </div>
@@ -34,13 +38,19 @@ import { Nino } from '../../../core/models';
   `
 })
 export class EstudiantesComponent implements OnInit {
-  estudiantes: Nino[] = [];
+  estudiantes: any[] = [];
   loading = true;
-  constructor(private api: ApiService) {}
+  constructor(private mock: MockDataService, private auth: AuthService) {}
   ngOnInit(): void {
-    this.api.get<{ estudiantes: Nino[] }>('profesor/estudiantes').subscribe({
-      next: d => { this.estudiantes = d.estudiantes ?? (d as any); this.loading = false; },
-      error: () => this.loading = false
-    });
+    const user = this.auth.getUser();
+    const profId = Number(user?.id ?? 2);
+    this.estudiantes = this.mock.getNinosByProfesor(profId);
+    this.loading = false;
+  }
+  getTareasCompletadas(ninoId: number): number {
+    return this.mock.getProgresoNino(ninoId).filter((p: any) => p.completada).length;
+  }
+  getLogros(ninoId: number): number {
+    return this.mock.getLogrosNino(ninoId).length;
   }
 }

@@ -7,9 +7,8 @@ export class NinoGuard implements CanActivate {
   constructor(private auth: AuthService, private router: Router) {}
 
   canActivate(): boolean {
-    // if (this.auth.isNinoLoggedIn()) return true;
-    // this.router.navigate(['/auth/nino-login']);
-    // return false;
-    return true;
+    if (this.auth.isNinoLoggedIn()) return true;
+    this.router.navigate(['/auth/nino-login']);
+    return false;
   }
 }
