@@ -16,12 +16,11 @@ class EjercicioSerializer(serializers.ModelSerializer):
 
 class TareaSerializer(serializers.ModelSerializer):
     ejercicios  = EjercicioSerializer(many=True, read_only=True)
-    ninos       = NinoSerializer(many=True, read_only=True)
     profesor_id = serializers.IntegerField(source='profesor.id', read_only=True)
 
     class Meta:
         model = Tarea
-        fields = ['id', 'titulo', 'descripcion', 'tipo_ejercicio', 'profesor_id', 'ejercicios', 'ninos', 'created_at']
+        fields = ['id', 'titulo', 'descripcion', 'tipo_ejercicio', 'profesor_id', 'ejercicios', 'created_at']
 
 
 class TareaCreateSerializer(serializers.ModelSerializer):

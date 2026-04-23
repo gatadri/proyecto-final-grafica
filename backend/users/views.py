@@ -4,10 +4,9 @@ from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from .permissions import IsDirector
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, NinoSerializer
+from .permissions import IsDirector, IsPadre
 from tareas.models import Nino
-from tareas.serializers import NinoSerializer
 
 
 class RegisterView(APIView):
@@ -79,3 +78,16 @@ class NinoLoginView(APIView):
             return Response({'nino': NinoSerializer(nino).data})
         except Nino.DoesNotExist:
             return Response({'message': 'Nombre o PIN incorrecto'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class HijosPadreView(APIView):
+    permission_classes = [IsAuthenticated, IsPadre]
+
+    def get(self, request, pk):
+        try:
+            padre = User.objects.get(pk=pk, role='padre')
+            hijos = Nino.objects.filter(padre=padre)
+            serializer = NinoSerializer(hijos, many=True)
+            return Response(serializer.data)
+        except User.DoesNotExist:
+            return Response({'message': 'Padre no encontrado'}, status=status.HTTP_404_NOT_FOUND)

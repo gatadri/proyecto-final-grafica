@@ -1,0 +1,80 @@
+<div class="avatar-wrapper">
+  <svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" class="avatar-svg">
+
+    <!-- Brazos -->
+    <rect x="14" y="76" width="16" height="30" rx="10" [attr.fill]="avatar.skin"/>
+    <rect x="70" y="76" width="16" height="30" rx="10" [attr.fill]="avatar.skin"/>
+
+    <!-- Cuerpo -->
+    <rect x="28" y="72" width="44" height="40" rx="18" [attr.fill]="avatar.shirtColor"/>
+    <rect x="28" y="72" width="44" height="20" rx="18" fill="rgba(255,255,255,0.18)"/>
+
+    <!-- Cabeza -->
+    <circle cx="50" cy="44" r="22" [attr.fill]="avatar.skin"/>
+
+    <!-- Pelo -->
+    <ng-container [ngSwitch]="avatar.hairStyle">
+      <ng-container *ngSwitchCase="'long'">
+        <path d="M24 46 C24 22 40 18 50 18 C60 18 76 22 76 46 C76 62 70 66 66 68 C60 72 50 74 50 74 C50 74 40 72 34 68 C30 66 24 62 24 46 Z" [attr.fill]="avatar.hairColor"/>
+      </ng-container>
+      <ng-container *ngSwitchCase="'curly'">
+        <circle cx="30" cy="30" r="10" [attr.fill]="avatar.hairColor"/>
+        <circle cx="50" cy="22" r="12" [attr.fill]="avatar.hairColor"/>
+        <circle cx="70" cy="30" r="10" [attr.fill]="avatar.hairColor"/>
+      </ng-container>
+      <ng-container *ngSwitchCase="'spiky'">
+        <path d="M24 46 L34 18 L44 46 L54 18 L64 46 L74 24 L76 46 Q76 55 70 60 Q60 66 50 66 Q40 66 30 60 Q24 55 24 46 Z" [attr.fill]="avatar.hairColor"/>
+      </ng-container>
+      <ng-container *ngSwitchCase="'short'">
+        <path d="M24 40 C30 20 38 20 50 24 C62 20 70 20 76 40 C76 50 70 56 50 56 C30 56 24 50 24 40 Z" [attr.fill]="avatar.hairColor"/>
+      </ng-container>
+    </ng-container>
+
+    <!-- Rostro -->
+    <g *ngIf="!parpadeando">
+      <circle cx="36" cy="44" r="5" fill="white"/>
+      <circle cx="64" cy="44" r="5" fill="white"/>
+      <circle cx="36" cy="44" r="2.5" fill="#1a1a2e"/>
+      <circle cx="64" cy="44" r="2.5" fill="#1a1a2e"/>
+    </g>
+    <g *ngIf="parpadeando">
+      <line x1="30" y1="44" x2="42" y2="44" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+      <line x1="58" y1="44" x2="70" y2="44" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+    </g>
+
+    <!-- Expresiones -->
+    <ng-container [ngSwitch]="expresion">
+      <ng-container *ngSwitchCase="'guino'">
+        <line x1="58" y1="44" x2="66" y2="44" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M38 60 Q50 68 62 60" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </ng-container>
+      <ng-container *ngSwitchCase="'sorprendido'">
+        <ellipse cx="36" cy="44" rx="5" ry="6" fill="white"/>
+        <ellipse cx="64" cy="44" rx="5" ry="6" fill="white"/>
+        <circle cx="36" cy="44" r="2.5" fill="#1a1a2e"/>
+        <circle cx="64" cy="44" r="2.5" fill="#1a1a2e"/>
+        <ellipse cx="50" cy="60" rx="5" ry="6" fill="#1a1a2e"/>
+      </ng-container>
+      <ng-container *ngSwitchCase="'pensando'">
+        <path d="M40 60 Q50 56 60 60" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </ng-container>
+      <ng-container *ngSwitchCase="'triste'">
+        <path d="M40 62 Q50 56 60 62" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </ng-container>
+      <ng-container *ngSwitchCase="'enojado'">
+        <path d="M34 38 L42 34" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M58 34 L66 38" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
+        <path d="M40 62 L60 62" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </ng-container>
+      <ng-container *ngSwitchDefault>
+        <path d="M38 60 Q50 68 62 60" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </ng-container>
+    </ng-container>
+
+    <!-- Mejillas -->
+    <circle cx="32" cy="52" r="4" fill="#FFB3BA" opacity="0.8"/>
+    <circle cx="68" cy="52" r="4" fill="#FFB3BA" opacity="0.8"/>
+  </svg>
+
+  <div class="avatar-name">{{ displayName ?? avatar.nombre }}</div>
+</div>
