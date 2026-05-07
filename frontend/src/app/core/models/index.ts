@@ -21,7 +21,12 @@ export interface Nino {
   racha_dias: number;
   ultima_actividad: string | null;
   progreso?: number;
-  profesor: User;
+  profesor?: {
+    id: number;
+    nombre: string;
+    apellido: string;
+    email: string;
+  };
   tareas: Tarea[];
   estadisticas: {
     monedas: number;

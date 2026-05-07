@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tarea, Ejercicio, Nino
+from .models import Tarea, Ejercicio, Nino, EjercicioProgreso, Logro, LogroNino, ProgresoPractica, EjercicioPractica
 
 
 class NinoSerializer(serializers.ModelSerializer):
@@ -12,6 +12,42 @@ class EjercicioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ejercicio
         fields = ['id', 'pregunta', 'opciones', 'respuesta_correcta', 'explicacion', 'orden']
+
+
+class EjercicioProgresoSerializer(serializers.ModelSerializer):
+    student = serializers.PrimaryKeyRelatedField(queryset=Nino.objects.all())
+    item = serializers.PrimaryKeyRelatedField(queryset=Ejercicio.objects.all())
+
+    class Meta:
+        model = EjercicioProgreso
+        fields = ['id', 'student', 'item', 'skill_id', 'difficulty', 'time_spent_ms', 'attempts', 'used_hint', 'n_hints', 'fast_response', 'correct', 'tab_blur_count', 'idle_ms', 'erratic_clicks', 'error_type', 'will_mistake_next', 'focus_score', 'created_at']
+
+
+class ProgresoPracticaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProgresoPractica
+        fields = ['id', 'nino', 'completada', 'puntos_obtenidos', 'cantidad_aciertos',
+                  'cantidad_errores', 'tiempo_total_ms', 'dificultad', 'tipo_ejercicio', 'fecha_practica']
+
+
+class EjercicioPracticaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EjercicioPractica
+        fields = ['id', 'pregunta', 'opciones', 'respuesta_correcta', 'tipo_ejercicio', 'categoria', 'dificultad']
+
+
+class LogroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Logro
+        fields = ['id', 'nombre', 'descripcion', 'icono', 'rareza', 'condicion', 'valor_requerido', 'puntos_bonus']
+
+
+class LogroNinoSerializer(serializers.ModelSerializer):
+    logro = LogroSerializer(read_only=True)
+
+    class Meta:
+        model = LogroNino
+        fields = ['id', 'logro', 'fecha_desbloqueado']
 
 
 class TareaSerializer(serializers.ModelSerializer):

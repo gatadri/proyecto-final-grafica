@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Nino } from '../../../core/models';
@@ -7,9 +8,16 @@ import { Nino } from '../../../core/models';
 @Component({
   selector: 'app-padre-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   template: `
     <h5 class="fw-bold mb-4"><i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard Padre</h5>
+    
+    <div class="mb-4">
+      <a routerLink="/padre/reportes" class="btn btn-primary">
+        <i class="fas fa-chart-line me-2"></i>Ver Reportes de Mis Hijos
+      </a>
+    </div>
+    
     <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
     <div *ngIf="!loading" class="row g-3">
       <div *ngFor="let h of hijos" class="col-md-6">
@@ -22,7 +30,7 @@ import { Nino } from '../../../core/models';
               <span class="badge bg-success">{{ h.estadisticas.experiencia }} XP</span>
               <span class="badge bg-danger"><i class="fas fa-fire me-1"></i>{{ h.estadisticas.racha_dias }} días</span>
             </div>
-            <div class="mb-1"><small class="text-muted">Tareas asignadas: <strong>{{ h.tareas?.length || 0 }}</strong></small></div>
+            <div class="mb-1"><small class="text-muted">Tareas asignadas: <strong>{{ h.tareas.length || 0 }}</strong></small></div>
             <div class="mb-1"><small class="text-muted">Logros obtenidos: <strong>Próximamente</strong></small></div>
             <div class="progress mt-2" style="height:6px">
               <div class="progress-bar bg-success" [style.width.%]="(h.estadisticas.experiencia % 100)"></div>

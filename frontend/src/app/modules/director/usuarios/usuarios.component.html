@@ -164,7 +164,10 @@
               <tr *ngFor="let hijo of hijosData">
                 <td>{{ hijo.nombre }} {{ hijo.apellido }}</td>
                 <td><code>{{ hijo.pin }}</code></td>
-                <td>{{ hijo.profesor.nombre }} {{ hijo.profesor.apellido }}</td>
+                <td>
+                  <span *ngIf="hijo.profesor">{{ hijo.profesor.nombre }} {{ hijo.profesor.apellido }}</span>
+                  <span *ngIf="!hijo.profesor" class="text-muted">Sin profesor asignado</span>
+                </td>
               </tr>
             </tbody>
           </table>

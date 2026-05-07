@@ -6,7 +6,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, NinoSerializer
 from .permissions import IsDirector, IsPadre
-from tareas.models import Nino
+from tareas.models import Nino, ProgresoTarea, ProgresoPractica
+from django.db.models import Count, Sum, Avg, Q
+from datetime import datetime, timedelta
 
 
 class RegisterView(APIView):
@@ -38,7 +40,9 @@ class LoginView(APIView):
 class UsuariosView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsDirector]
     serializer_class = UserSerializer
-    queryset = User.objects.all()
+    
+    def get_queryset(self):
+        return User.objects.all().prefetch_related('hijos', 'hijos__profesor')
 
 
 class UsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -81,13 +85,206 @@ class NinoLoginView(APIView):
 
 
 class HijosPadreView(APIView):
-    permission_classes = [IsAuthenticated, IsPadre]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
         try:
             padre = User.objects.get(pk=pk, role='padre')
-            hijos = Nino.objects.filter(padre=padre)
+            hijos = Nino.objects.filter(padre=padre).select_related('profesor')
             serializer = NinoSerializer(hijos, many=True)
             return Response(serializer.data)
         except User.DoesNotExist:
             return Response({'message': 'Padre no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class EstadisticasGeneralesView(APIView):
+    permission_classes = [IsAuthenticated, IsDirector]
+
+    def get(self, request):
+        # Total de estudiantes
+        total_estudiantes = Nino.objects.count()
+        
+        # Tareas completadas
+        total_tareas_completadas = ProgresoTarea.objects.filter(completada=True).count()
+        
+        # Promedios de aciertos y errores
+        progresos = ProgresoTarea.objects.filter(completada=True).aggregate(
+            promedio_aciertos=Avg('cantidad_aciertos'),
+            promedio_errores=Avg('cantidad_errores')
+        )
+        
+        # Monedas y XP total
+        totales = Nino.objects.aggregate(
+            total_monedas=Sum('monedas'),
+            total_xp=Sum('experiencia')
+        )
+        
+        # Estudiantes activos (con al menos una tarea completada)
+        estudiantes_activos = Nino.objects.filter(
+            progreso_tareas__completada=True
+        ).distinct().count()
+        
+        # Tareas por tipo
+        from tareas.models import Tarea
+        tareas_por_tipo = Tarea.objects.values('tipo_ejercicio').annotate(
+            cantidad=Count('id')
+        ).order_by('-cantidad')
+        
+        # Distribución de niveles
+        distribucion_niveles = Nino.objects.values('nivel').annotate(
+            cantidad=Count('id')
+        ).order_by('nivel')
+        
+        # Rendimiento semanal (últimos 7 días)
+        hoy = datetime.now().date()
+        rendimiento_semanal = []
+        dias_semana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+        
+        for i in range(7):
+            dia = hoy - timedelta(days=6-i)
+            progresos_dia = ProgresoTarea.objects.filter(
+                fecha_completada__date=dia,
+                completada=True
+            ).aggregate(
+                aciertos=Sum('cantidad_aciertos'),
+                errores=Sum('cantidad_errores')
+            )
+            
+            rendimiento_semanal.append({
+                'dia': dias_semana[dia.weekday()],
+                'aciertos': progresos_dia['aciertos'] or 0,
+                'errores': progresos_dia['errores'] or 0
+            })
+        
+        return Response({
+            'total_estudiantes': total_estudiantes,
+            'total_tareas_completadas': total_tareas_completadas,
+            'promedio_aciertos': progresos['promedio_aciertos'] or 0,
+            'promedio_errores': progresos['promedio_errores'] or 0,
+            'total_monedas_sistema': totales['total_monedas'] or 0,
+            'total_xp_sistema': totales['total_xp'] or 0,
+            'estudiantes_activos': estudiantes_activos,
+            'tareas_por_tipo': list(tareas_por_tipo),
+            'distribucion_niveles': list(distribucion_niveles),
+            'rendimiento_semanal': rendimiento_semanal
+        })
+
+
+class EstadisticasHijosPadreView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            padre = User.objects.get(pk=pk, role='padre')
+            
+            # Verificar que el usuario autenticado es el padre
+            if request.user.id != padre.id and request.user.role != 'director':
+                return Response({'error': 'No autorizado'}, status=status.HTTP_403_FORBIDDEN)
+            
+            hijos = Nino.objects.filter(padre=padre)
+            
+            if not hijos.exists():
+                return Response({'error': 'No tiene hijos registrados'}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Estadísticas individuales de cada hijo
+            estadisticas_individuales = []
+            
+            for hijo in hijos:
+                progresos = ProgresoTarea.objects.filter(nino=hijo, completada=True)
+                
+                stats = progresos.aggregate(
+                    total_aciertos=Sum('cantidad_aciertos'),
+                    total_errores=Sum('cantidad_errores'),
+                    promedio_tiempo=Avg('tiempo_total_ms')
+                )
+                
+                total_aciertos = stats['total_aciertos'] or 0
+                total_errores = stats['total_errores'] or 0
+                total = total_aciertos + total_errores
+                tasa_exito = (total_aciertos / total * 100) if total > 0 else 0
+                
+                ultima_actividad = progresos.order_by('-fecha_completada').first()
+                
+                estadisticas_individuales.append({
+                    'id': hijo.id,
+                    'nombre': hijo.nombre,
+                    'apellido': hijo.apellido,
+                    'nivel': hijo.nivel,
+                    'experiencia': hijo.experiencia,
+                    'monedas': hijo.monedas,
+                    'racha_dias': hijo.racha_dias,
+                    'tareas_completadas': progresos.count(),
+                    'total_aciertos': total_aciertos,
+                    'total_errores': total_errores,
+                    'promedio_tiempo_ms': int(stats['promedio_tiempo'] or 0),
+                    'tasa_exito': round(tasa_exito, 1),
+                    'ultima_actividad': ultima_actividad.fecha_completada.strftime('%d/%m/%Y') if ultima_actividad else None
+                })
+            
+            # Estadísticas grupales
+            total_tareas = ProgresoTarea.objects.filter(nino__in=hijos, completada=True).count()
+            
+            totales_grupales = ProgresoTarea.objects.filter(nino__in=hijos, completada=True).aggregate(
+                total_aciertos=Sum('cantidad_aciertos'),
+                total_errores=Sum('cantidad_errores')
+            )
+            
+            totales_hijos = hijos.aggregate(
+                total_monedas=Sum('monedas'),
+                promedio_nivel=Avg('nivel')
+            )
+            
+            # Hijo más activo
+            hijo_mas_activo = hijos.annotate(
+                num_tareas=Count('progreso_tareas', filter=Q(progreso_tareas__completada=True))
+            ).order_by('-num_tareas').first()
+            
+            # Mejor rendimiento
+            mejor_hijo = None
+            mejor_tasa = 0
+            for stats in estadisticas_individuales:
+                if stats['tasa_exito'] > mejor_tasa:
+                    mejor_tasa = stats['tasa_exito']
+                    mejor_hijo = f"{stats['nombre']} {stats['apellido']}"
+            
+            # Rendimiento semanal
+            hoy = datetime.now().date()
+            rendimiento_semanal = []
+            dias_semana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+            
+            for i in range(7):
+                dia = hoy - timedelta(days=6-i)
+                progresos_dia = ProgresoTarea.objects.filter(
+                    nino__in=hijos,
+                    fecha_completada__date=dia,
+                    completada=True
+                ).aggregate(
+                    aciertos=Sum('cantidad_aciertos'),
+                    errores=Sum('cantidad_errores')
+                )
+                
+                rendimiento_semanal.append({
+                    'dia': dias_semana[dia.weekday()],
+                    'aciertos': progresos_dia['aciertos'] or 0,
+                    'errores': progresos_dia['errores'] or 0
+                })
+            
+            estadisticas_grupales = {
+                'total_hijos': hijos.count(),
+                'total_tareas_completadas': total_tareas,
+                'total_aciertos': totales_grupales['total_aciertos'] or 0,
+                'total_errores': totales_grupales['total_errores'] or 0,
+                'promedio_nivel': round(totales_hijos['promedio_nivel'] or 0, 1),
+                'total_monedas': totales_hijos['total_monedas'] or 0,
+                'hijo_mas_activo': f"{hijo_mas_activo.nombre} {hijo_mas_activo.apellido}" if hijo_mas_activo else 'N/A',
+                'mejor_rendimiento': mejor_hijo or 'N/A',
+                'rendimiento_semanal': rendimiento_semanal
+            }
+            
+            return Response({
+                'estadisticas_individuales': estadisticas_individuales,
+                'estadisticas_grupales': estadisticas_grupales
+            })
+            
+        except User.DoesNotExist:
+            return Response({'error': 'Padre no encontrado'}, status=status.HTTP_404_NOT_FOUND)

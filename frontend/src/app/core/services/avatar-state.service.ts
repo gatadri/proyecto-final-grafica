@@ -3,6 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 
 export type AvatarExpression =
   | 'feliz'
+  | 'alegre'
   | 'sorprendido'
   | 'guino'
   | 'pensando'

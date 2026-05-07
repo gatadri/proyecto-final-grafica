@@ -9,6 +9,7 @@ import { NinoTareaComponent } from './tarea/nino-tarea.component';
 import { NinoTiendaComponent } from './tienda/nino-tienda.component';
 import { NinoLogrosComponent } from './logros/nino-logros.component';
 import { NinoPracticaComponent } from './practica/nino-practica.component';
+import { AprenderComponent } from './aprender/aprender.component';
 
 const routes: Routes = [
   {
@@ -20,6 +21,7 @@ const routes: Routes = [
       { path: 'tienda',    component: NinoTiendaComponent },
       { path: 'logros',    component: NinoLogrosComponent },
       { path: 'practica',  component: NinoPracticaComponent },
+      { path: 'aprender',  component: AprenderComponent },
       { path: '',          redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }
@@ -33,7 +35,8 @@ const routes: Routes = [
     NinoTareaComponent,
     NinoTiendaComponent,
     NinoLogrosComponent,
-    NinoPracticaComponent
+    NinoPracticaComponent,
+    AprenderComponent
   ]
 })
 export class NinoModule {}

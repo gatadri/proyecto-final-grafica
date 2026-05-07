@@ -8,11 +8,12 @@
     <div class="col-md-3">
       <div class="card text-center">
         <div class="card-body">
+          <img [src]="getAvatarUrl(nino.avatar)" alt="Avatar" class="img-fluid rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover;">
           <h5 class="fw-bold">¡Hola {{ nino.nombre }}!</h5>
 
           <div class="p-3 rounded mb-3" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)">
             <i class="fas fa-coins text-warning fa-2x"></i>
-            <h3 class="text-warning fw-bold mb-0">{{ nino.monedas }}</h3>
+            <h3 class="text-warning fw-bold mb-0">{{ monedas }}</h3>
             <small class="text-white">Monedas</small>
           </div>
 
@@ -31,10 +32,10 @@
 
           <!-- Barra de progreso tareas -->
           <div class="mb-3">
-            <small class="text-muted">Tareas: {{ tareasCompletadas }}/{{ totalTareas }}</small>
+            <small class="text-muted">Tareas: {{ tareasCompletadasCount }}/{{ totalTareas }}</small>
             <div class="progress mt-1" style="height:8px">
               <div class="progress-bar bg-success"
-                   [style.width.%]="totalTareas > 0 ? (tareasCompletadas / totalTareas * 100) : 0"></div>
+                   [style.width.%]="totalTareas > 0 ? (tareasCompletadasCount / totalTareas * 100) : 0"></div>
             </div>
           </div>
 
@@ -42,6 +43,7 @@
             <a routerLink="/nino/tienda"   class="btn btn-warning fw-bold"><i class="fas fa-store me-2"></i>Tienda</a>
             <a routerLink="/nino/logros"   class="btn btn-success fw-bold"><i class="fas fa-trophy me-2"></i>Mis Logros</a>
             <a routerLink="/nino/practica" class="btn btn-info fw-bold text-white"><i class="fas fa-dumbbell me-2"></i>Practicar</a>
+            <a routerLink="/nino/aprender" class="btn btn-purple fw-bold text-white" style="background:#7c3aed"><i class="fas fa-book-open me-2"></i>Aprender</a>
             <button (click)="logout()" class="btn btn-outline-secondary"><i class="fas fa-sign-out-alt me-2"></i>Salir</button>
           </div>
         </div>
@@ -50,7 +52,7 @@
 
     <!-- Tareas pendientes -->
     <div class="col-md-9">
-      <div class="card">
+      <div class="card mb-4">
         <div class="card-header fw-bold">
           <i class="fas fa-tasks text-primary me-2"></i>Mis Tareas Pendientes
           <span class="badge bg-warning ms-2">{{ tareas.length }}</span>
@@ -72,6 +74,39 @@
               <a [routerLink]="['/nino/tarea', t.id]" class="btn btn-primary btn-lg">
                 <i class="fas fa-play me-1"></i>¡Empezar!
               </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logros recientes -->
+      <div *ngIf="logrosRecientes.length > 0" class="card">
+        <div class="card-header fw-bold">
+          <i class="fas fa-trophy text-warning me-2"></i>Mis Logros Recientes
+          <span class="badge bg-success ms-2">{{ logrosRecientes.length }}</span>
+        </div>
+        <div class="card-body">
+          <div class="row g-2">
+            <div *ngFor="let logro of logrosRecientes" class="col-md-4">
+              <div class="card text-center border-success"
+                   [ngClass]="{'bg-light': logro.logro.rareza === 'bronce', 'bg-warning bg-opacity-10': logro.logro.rareza === 'plata', 'bg-danger bg-opacity-10': logro.logro.rareza === 'oro'}">
+                <div class="card-body">
+                  <i class="fas fa-trophy fa-2x mb-2"
+                     [class.text-warning]="logro.logro.rareza === 'bronce'"
+                     [class.text-secondary]="logro.logro.rareza === 'plata'"
+                     [class.text-danger]="logro.logro.rareza === 'oro'"></i>
+                  <h6 class="fw-bold">{{ logro.logro.nombre }}</h6>
+                  <small class="text-muted">{{ logro.logro.descripcion }}</small>
+                  <div class="mt-2">
+                    <span class="badge"
+                          [class.badge-light]="logro.logro.rareza === 'bronce'"
+                          [class.badge-warning]="logro.logro.rareza === 'plata'"
+                          [class.badge-danger]="logro.logro.rareza === 'oro'">
+                      {{ logro.logro.rareza }}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

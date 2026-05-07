@@ -1,0 +1,44 @@
+<div class="aprender-container">
+  <!-- Vista de selección de temas -->
+  <div *ngIf="!temaActivo" class="temas-grid">
+    <div class="header-aprender">
+      <h2 class="titulo-principal">
+        <span class="icono-titulo">📚</span>
+        Aprender Paso a Paso
+      </h2>
+      <p class="subtitulo">¡Elige un tema para comenzar!</p>
+    </div>
+
+    <div class="tarjetas-temas">
+      <div *ngFor="let tema of temas" 
+           class="tarjeta-tema"
+           [style.border-color]="tema.color"
+           (click)="seleccionar(tema.id)">
+        <div class="tema-icono" [style.background]="tema.colorClaro">
+          <span class="icono-grande">{{ tema.emoji }}</span>
+        </div>
+        <div class="tema-contenido">
+          <h3 class="tema-titulo" [style.color]="tema.color">
+            {{ tema.icono }} {{ tema.titulo }}
+          </h3>
+          <p class="tema-descripcion">{{ tema.descripcion }}</p>
+        </div>
+        <div class="tema-flecha" [style.color]="tema.color">▶</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vista de lección activa -->
+  <div *ngIf="temaActivo" class="leccion-activa">
+    <button class="btn-volver" (click)="volver()">
+      ← Volver a temas
+    </button>
+
+    <app-leccion-suma *ngIf="temaActivo === 'suma'"></app-leccion-suma>
+    <app-leccion-resta *ngIf="temaActivo === 'resta'"></app-leccion-resta>
+    <app-leccion-multiplicacion *ngIf="temaActivo === 'multiplicacion'"></app-leccion-multiplicacion>
+    <app-leccion-division *ngIf="temaActivo === 'division'"></app-leccion-division>
+    <app-leccion-fracciones *ngIf="temaActivo === 'fracciones'"></app-leccion-fracciones>
+    <app-leccion-mcm *ngIf="temaActivo === 'mcm'"></app-leccion-mcm>
+  </div>
+</div>

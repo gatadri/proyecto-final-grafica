@@ -17,6 +17,7 @@ export class PadreLayoutComponent {
   menu: MenuItem[] = [
     { label: 'Dashboard',  icon: 'tachometer-alt', route: '/padre/dashboard'  },
     { label: 'Calendario', icon: 'calendar',        route: '/padre/calendario' },
+    { label: 'Reportes',   icon: 'chart-line',      route: '/padre/reportes'   },
     { label: 'Logros',     icon: 'trophy',          route: '/padre/logros'     }
   ];
 }

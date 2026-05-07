@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView, LoginView, UsuariosView, UsuarioDetailView, SuspenderUsuarioView, ActivarUsuarioView, NinoLoginView, HijosPadreView
+from .views import RegisterView, LoginView, UsuariosView, UsuarioDetailView, SuspenderUsuarioView, ActivarUsuarioView, NinoLoginView, HijosPadreView, EstadisticasGeneralesView, EstadisticasHijosPadreView
 
 urlpatterns = [
     path('register',                    RegisterView.as_view()),
@@ -10,4 +10,6 @@ urlpatterns = [
     path('usuarios/<int:pk>/suspender', SuspenderUsuarioView.as_view()),
     path('usuarios/<int:pk>/activar',   ActivarUsuarioView.as_view()),
     path('usuarios/<int:pk>/hijos',     HijosPadreView.as_view()),
+    path('director/estadisticas-generales', EstadisticasGeneralesView.as_view()),
+    path('padre/<int:pk>/estadisticas-hijos', EstadisticasHijosPadreView.as_view()),
 ]

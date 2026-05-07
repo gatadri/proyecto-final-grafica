@@ -3,69 +3,140 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { MockDataService } from '../../../core/services/mock-data.service';
 import { AvatarStateService } from '../../../core/services/avatar-state.service';
 import { Nino } from '../../../core/models';
 
-@Component({ selector: 'app-nino-practica', standalone: true, imports: [CommonModule, FormsModule], templateUrl: './nino-practica.component.html' })
+@Component({
+  selector: 'app-nino-practica',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './nino-practica.component.html',
+  styleUrls: ['./nino-practica.component.css']
+})
 export class NinoPracticaComponent implements OnInit {
   nino!: Nino;
   ejercicios: any[] = [];
   actual = 0;
   respuesta = '';
-  feedback: { correcto: boolean; explicacion: string } | null = null;
+  feedback: { correcto: boolean; mensaje: string } | null = null;
+  
+  // Estadísticas de la sesión
   puntosGanados = 0;
+  aciertos = 0;
+  errores = 0;
+  inicioSesion = 0;
+  
   loading = true;
+  terminado = false;
 
   constructor(
     private api: ApiService,
     private auth: AuthService,
-    private mock: MockDataService,
     private avatarState: AvatarStateService
   ) {}
 
   ngOnInit(): void {
     this.avatarState.resetExpression();
     this.nino = this.auth.getNino()!;
-    // Simular carga de ejercicios de práctica
-    setTimeout(() => {
-      this.ejercicios = [
-        { pregunta: '¿Cuánto es 2 + 2?', respuesta_correcta: '4', explicacion: '2 + 2 = 4' },
-        { pregunta: '¿Cuánto es 5 - 3?', respuesta_correcta: '2', explicacion: '5 - 3 = 2' },
-        { pregunta: '¿Cuánto es 3 * 2?', respuesta_correcta: '6', explicacion: '3 * 2 = 6' }
-      ];
-      this.loading = false;
-    }, 1000);
+    this.cargarEjerciciosAleatorios();
+  }
+
+  cargarEjerciciosAleatorios(): void {
+    this.loading = true;
+    this.api.get<any[]>('nino/ejercicios-practica?cantidad=5').subscribe({
+      next: (ejercicios) => {
+        this.ejercicios = ejercicios.length > 0 ? ejercicios : this.generarEjerciciosRespaldo();
+        this.inicioSesion = Date.now();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error cargando ejercicios', err);
+        this.ejercicios = this.generarEjerciciosRespaldo();
+        this.inicioSesion = Date.now();
+        this.loading = false;
+      }
+    });
+  }
+
+  generarEjerciciosRespaldo(): any[] {
+    const backup = [];
+    for (let i = 0; i < 5; i++) {
+      const a = Math.floor(Math.random() * 10) + 1;
+      const b = Math.floor(Math.random() * 10) + 1;
+      backup.push({
+        pregunta: `¿Cuánto es ${a} + ${b}?`,
+        respuesta_correcta: (a + b).toString(),
+        tipo_ejercicio: 'multiple',
+        opciones: [(a+b).toString(), (a+b+1).toString(), (a+b-1).toString(), (a+b+2).toString()].sort(() => Math.random() - 0.5)
+      });
+    }
+    return backup;
   }
 
   get ejercicio(): any { return this.ejercicios[this.actual]; }
-  get terminado(): boolean { return this.actual >= this.ejercicios.length; }
 
-  responder(): void {
-    if (!this.respuesta.trim()) return;
+  responder(opcion?: string): void {
+    if (this.feedback) return;
+    
+    const resp = (opcion || this.respuesta).trim().toLowerCase();
+    const correcta = this.ejercicio.respuesta_correcta.toLowerCase();
+    const esCorrecto = resp === correcta;
 
-    // Simular respuesta
-    const correcto = this.respuesta.trim().toLowerCase() === this.ejercicio.respuesta_correcta.toLowerCase();
-    const expresión = correcto ? 'feliz' : (Math.random() > 0.5 ? 'enojado' : 'triste');
-    this.avatarState.setExpression(expresión);
-    this.feedback = { correcto, explicacion: correcto ? '¡Correcto!' : `Incorrecto. La respuesta es ${this.ejercicio.respuesta_correcta}` };
-    if (correcto) {
-      this.puntosGanados++;
-      this.nino.monedas++;
-      localStorage.setItem('nino', JSON.stringify(this.nino));
+    if (esCorrecto) {
+      this.aciertos++;
+      this.puntosGanados += 10;
+      this.avatarState.setExpression('alegre');
+      this.feedback = { correcto: true, mensaje: '¡Excelente! +10 puntos' };
+    } else {
+      this.errores++;
+      this.avatarState.setExpression(Math.random() > 0.5 ? 'sorprendido' : 'triste');
+      this.feedback = { correcto: false, mensaje: `Casi... la respuesta era ${correcta}` };
     }
+
     setTimeout(() => {
       this.feedback = null;
       this.respuesta = '';
       this.actual++;
       this.avatarState.resetExpression();
-    }, 1800);
+      
+      if (this.actual >= this.ejercicios.length) {
+        this.finalizarPractica();
+      }
+    }, 1500);
+  }
+
+  finalizarPractica(): void {
+    this.terminado = true;
+    const tiempoTotal = Date.now() - this.inicioSesion;
+
+    // Guardar en la base de datos
+    const payload = {
+      nino: this.nino.id,
+      completada: true,
+      puntos_obtenidos: this.puntosGanados,
+      cantidad_aciertos: this.aciertos,
+      cantidad_errores: this.errores,
+      tiempo_total_ms: tiempoTotal,
+      dificultad: 1,
+      tipo_ejercicio: 'practica_libre'
+    };
+
+    this.api.post('nino/progreso-practica', payload).subscribe({
+      next: () => {
+        // Actualizar monedas del niño localmente
+        this.nino.monedas += this.puntosGanados;
+        this.auth.saveNino(this.nino);
+      },
+      error: (err) => console.error('Error guardando práctica', err)
+    });
   }
 
   reiniciar(): void {
     this.actual = 0;
     this.puntosGanados = 0;
-    this.loading = true;
-    this.ngOnInit();
+    this.aciertos = 0;
+    this.errores = 0;
+    this.terminado = false;
+    this.cargarEjerciciosAleatorios();
   }
 }

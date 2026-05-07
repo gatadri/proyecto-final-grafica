@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { MockDataService } from '../../../core/services/mock-data.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ApiService } from '../../../core/services/api.service';
+
+interface Nino { id: number; nombre: string; apellido: string; grado: number; nivel: number; }
 
 interface Nino { id: number; nombre: string; apellido: string; grado: number; nivel: number; }
 
@@ -22,7 +25,7 @@ export class TareasComponent implements OnInit {
   error     = '';
   form: FormGroup;
 
-  constructor(private mock: MockDataService, private auth: AuthService, private fb: FormBuilder) {
+  constructor(private mock: MockDataService, private auth: AuthService, private fb: FormBuilder, private api: ApiService) {
     this.form = this.fb.group({
       titulo:         ['', Validators.required],
       descripcion:    [''],
@@ -35,10 +38,15 @@ export class TareasComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    const user = this.auth.getUser();
-    const profId = Number(user?.id ?? 2);
-    this.tareas      = user?.role === 'director' ? this.mock.getTareas() : this.mock.getTareasByProfesor(profId);
-    this.estudiantes = this.mock.getNinosByProfesor(profId);
+    this.loading = true;
+    this.api.get<any[]>('tareas').subscribe({
+      next: tareas => this.tareas = tareas,
+      error: err => { this.error = 'Error cargando tareas'; console.error(err); }
+    });
+    this.api.get<Nino[]>('profesor/estudiantes').subscribe({
+      next: estudiantes => this.estudiantes = estudiantes,
+      error: err => { this.error = 'Error cargando estudiantes'; console.error(err); }
+    });
     this.loading = false;
   }
 
@@ -105,23 +113,34 @@ export class TareasComponent implements OnInit {
         opciones: e.opciones ? e.opciones.split(',').map((o: string) => o.trim()).filter((o: string) => o) : []
       }))
     };
-    const user = this.auth.getUser();
-    if (this.editando) { this.mock.editarTarea(this.editando.id, data); }
-    else               { this.mock.crearTarea(data, user?.id ?? 2); }
-    this.showForm = false;
-    this.saving = false;
-    this.load();
+    const obs = this.editando
+      ? this.api.put(`tareas/${this.editando.id}`, data)
+      : this.api.post('tareas', data);
+    obs.subscribe({
+      next: () => {
+        this.showForm = false;
+        this.saving = false;
+        this.load();
+      },
+      error: err => {
+        this.error = 'Error guardando tarea';
+        this.saving = false;
+        console.error(err);
+      }
+    });
   }
 
   eliminar(id: number): void {
     if (!confirm('¿Eliminar esta tarea?')) return;
-    this.mock.eliminarTarea(id);
-    this.load();
+    this.api.delete(`tareas/${id}`).subscribe({
+      next: () => this.load(),
+      error: err => { this.error = 'Error eliminando tarea'; console.error(err); }
+    });
   }
 
   getNombresNinos(nino_ids: number[]): string {
     return (nino_ids || []).map(id => {
-      const n = this.mock.getNinoById(id);
+      const n = this.estudiantes.find(e => e.id === id);
       return n ? n.nombre : '';
     }).filter(Boolean).join(', ');
   }

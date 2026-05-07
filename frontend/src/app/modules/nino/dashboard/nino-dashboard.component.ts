@@ -1,41 +1,83 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { MockDataService } from '../../../core/services/mock-data.service';
+import { ApiService } from '../../../core/services/api.service';
 import { Tarea } from '../../../core/models';
+import { Subject, interval, takeUntil } from 'rxjs';
 
 @Component({ selector: 'app-nino-dashboard', standalone: true, imports: [CommonModule, RouterModule], templateUrl: './nino-dashboard.component.html' })
-export class NinoDashboardComponent implements OnInit {
+export class NinoDashboardComponent implements OnInit, OnDestroy {
   nino: any = null;
-  tareas: Tarea[] = [];
-  progreso: any[] = [];
-  loading = true;
 
-  constructor(private auth: AuthService, private mock: MockDataService) {}
+  getAvatarUrl(avatar: string): string {
+    if (!avatar) return '/imagenes/avatares/nino.png';
+    if (avatar.startsWith('nina')) return '/imagenes/avatares/nina.png';
+    return '/imagenes/avatares/nino.png';
+  }
+
+  get monedas(): number {
+    return this.nino?.monedas ?? this.nino?.estadisticas?.monedas ?? 0;
+  }
+  tareas: Tarea[] = [];
+  tareasCompletadasCount = 0;
+  totalTareasAsignadas = 0;
+  logrosRecientes: any[] = [];
+  loading = true;
+  private destroy$ = new Subject<void>();
+
+  constructor(private auth: AuthService, private api: ApiService) {}
 
   ngOnInit(): void {
     this.nino = this.auth.getNino();
     if (this.nino) {
-      const todasTareas = this.mock.getTareasByNino(this.nino.id);
-      this.progreso     = this.mock.getProgresoNino(this.nino.id);
-      this.tareas       = todasTareas.filter((t: Tarea) => !this.progreso.find((p:any) => p.tarea_id === t.id && p.completada));
-      // Sincronizar datos actualizados del niño
-      const ninoActual = this.mock.getNinoById(this.nino.id);
-      if (ninoActual) {
-        this.nino = ninoActual;
-        localStorage.setItem('nino', JSON.stringify(ninoActual));
-      }
+      this.cargarTareas();
+      interval(2000).pipe(takeUntil(this.destroy$)).subscribe(() => this.cargarTareas());
     }
-    this.loading = false;
   }
 
-  get tareasCompletadas(): number {
-    return this.progreso.filter((p:any) => p.completada).length;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private cargarTareas(): void {
+    this.api.get<Tarea[]>(`nino/tareas?nino_id=${this.nino.id}`).subscribe({
+      next: tareas => {
+        this.totalTareasAsignadas = tareas.length;
+        this.api.get<any[]>(`nino/progreso?nino_id=${this.nino.id}`).subscribe({
+          next: progreso => {
+            this.tareasCompletadasCount = progreso.filter(p => p.completada).length;
+            const completadas = progreso.filter(p => p.completada).map(p => p.tarea_id);
+            this.tareas = tareas.filter(t => !completadas.includes(t.id));
+            this.loading = false;
+          },
+          error: err => {
+            console.error('Error cargando progreso', err);
+            this.tareas = tareas;
+            this.loading = false;
+          }
+        });
+        this.cargarLogros();
+      },
+      error: err => {
+        console.error('Error cargando tareas', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  private cargarLogros(): void {
+    this.api.get<any[]>(`nino/logros?nino_id=${this.nino.id}`).subscribe({
+      next: logros => {
+        this.logrosRecientes = logros.slice(0, 3);
+      },
+      error: err => console.error('Error cargando logros', err)
+    });
   }
 
   get totalTareas(): number {
-    return this.mock.getTareasByNino(this.nino?.id ?? 0).length;
+    return this.totalTareasAsignadas;
   }
 
   logout(): void { this.auth.ninoLogout(); }

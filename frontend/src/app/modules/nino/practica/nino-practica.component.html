@@ -8,12 +8,29 @@
   <!-- Terminado -->
   <div *ngIf="!loading && terminado" class="card text-center shadow-lg" style="width: 420px">
     <div class="card-body p-5">
-      <i class="fas fa-dumbbell fa-4x text-success mb-3"></i>
-      <h3 class="fw-bold">¡Práctica completada!</h3>
+      <div class="mb-3" style="font-size: 4rem">🏆</div>
+      <h3 class="fw-bold">¡Práctica Finalizada!</h3>
+      
+      <div class="row g-2 my-4">
+        <div class="col-6">
+          <div class="p-2 border rounded bg-light">
+            <div class="fw-bold text-success">{{ aciertos }}</div>
+            <small class="text-muted">Aciertos</small>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 border rounded bg-light">
+            <div class="fw-bold text-danger">{{ errores }}</div>
+            <small class="text-muted">Errores</small>
+          </div>
+        </div>
+      </div>
+
       <div class="p-3 rounded mb-4" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)">
         <h2 class="text-warning fw-bold mb-0">+{{ puntosGanados }}</h2>
         <small class="text-white">monedas ganadas</small>
       </div>
+
       <div class="d-grid gap-2">
         <button (click)="reiniciar()" class="btn btn-success btn-lg">
           <i class="fas fa-redo me-2"></i>Practicar de nuevo
@@ -25,34 +42,71 @@
     </div>
   </div>
 
+  <!-- Sin ejercicios -->
+  <div *ngIf="!loading && !terminado && ejercicios.length === 0" class="card text-center shadow-lg" style="width: 420px">
+    <div class="card-body p-5">
+      <div class="mb-3" style="font-size: 4rem">📚</div>
+      <h3 class="fw-bold">¡Ejercicios de Práctica!</h3>
+      <p class="text-muted">Cargando ejercicios disponibles...</p>
+      <button (click)="cargarEjerciciosAleatorios()" class="btn btn-primary">
+        <i class="fas fa-sync me-2"></i>Cargar ejercicios
+      </button>
+    </div>
+  </div>
+
   <!-- Ejercicio -->
   <div *ngIf="!loading && !terminado && ejercicio" class="card shadow-lg" style="width: 480px">
     <div class="card-body p-4">
       <div class="d-flex justify-content-between mb-3">
-        <small class="text-muted">Ejercicio {{ actual + 1 }} de {{ ejercicios.length }}</small>
-        <small class="text-muted"><i class="fas fa-coins text-warning me-1"></i>{{ puntosGanados }} ganadas</small>
+        <span class="badge bg-info">Ejercicio {{ actual + 1 }} de {{ ejercicios.length }}</span>
+        <span class="badge bg-warning text-dark"><i class="fas fa-coins me-1"></i>{{ puntosGanados }} pts</span>
       </div>
-      <div class="progress mb-4" style="height: 8px">
-        <div class="progress-bar bg-success" [style.width.%]="(actual / ejercicios.length) * 100"></div>
-      </div>
-
-      <h5 class="fw-bold text-center mb-4">{{ ejercicio.pregunta }}</h5>
-
-      <div class="mb-3">
-        <input type="text" [(ngModel)]="respuesta" class="form-control form-control-lg text-center"
-               placeholder="Tu respuesta..." (keyup.enter)="responder()" [disabled]="!!feedback">
+      
+      <div class="progress mb-4" style="height: 10px; border-radius: 10px;">
+        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" 
+             [style.width.%]="(actual / ejercicios.length) * 100"></div>
       </div>
 
-      <div *ngIf="feedback" class="alert mb-3"
+      <div class="text-center mb-4">
+        <h4 class="fw-bold">{{ ejercicio.pregunta }}</h4>
+      </div>
+
+      <!-- Opciones (si existen) -->
+      <div *ngIf="ejercicio.opciones && ejercicio.opciones.length > 0" class="row g-2 mb-3">
+        <div *ngFor="let op of ejercicio.opciones" class="col-6">
+          <button (click)="responder(op)" 
+                  class="btn btn-outline-primary w-100 py-3 fw-bold"
+                  [disabled]="!!feedback">
+            {{ op }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Input texto (si no hay opciones) -->
+      <div *ngIf="!ejercicio.opciones || ejercicio.opciones.length === 0" class="mb-3">
+        <input type="text" [(ngModel)]="respuesta" class="form-control form-control-lg text-center fw-bold"
+               placeholder="Escribe tu respuesta..." (keyup.enter)="responder()" [disabled]="!!feedback">
+      </div>
+
+      <div *ngIf="feedback" class="alert mb-3 animate__animated animate__fadeInUp"
            [class.alert-success]="feedback.correcto"
-           [class.alert-danger]="!feedback.correcto">
-        <i class="fas me-2" [class.fa-check-circle]="feedback.correcto" [class.fa-times-circle]="!feedback.correcto"></i>
-        {{ feedback.correcto ? '¡Correcto! +1 moneda' : 'Incorrecto: ' + feedback.explicacion }}
+           [class.alert-danger]="!feedback.correcto"
+           style="border-radius: 15px;">
+        <div class="d-flex align-items-center">
+          <div class="me-3" style="font-size: 1.5rem">
+            {{ feedback.correcto ? '🎉' : '😅' }}
+          </div>
+          <div>
+            <div class="fw-bold">{{ feedback.correcto ? '¡Muy bien!' : '¡Casi!' }}</div>
+            <small>{{ feedback.mensaje }}</small>
+          </div>
+        </div>
       </div>
 
-      <button (click)="responder()" class="btn btn-success btn-lg w-100"
+      <button *ngIf="!ejercicio.opciones || ejercicio.opciones.length === 0"
+              (click)="responder()" class="btn btn-success btn-lg w-100 shadow"
               [disabled]="!respuesta.trim() || !!feedback">
-        <i class="fas fa-check me-2"></i>Responder
+        <i class="fas fa-paper-plane me-2"></i>Enviar Respuesta
       </button>
     </div>
   </div>

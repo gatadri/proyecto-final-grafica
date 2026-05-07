@@ -1,0 +1,34 @@
+.card {
+  border: none;
+  border-radius: 20px;
+}
+
+.btn-lg {
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.form-control-lg {
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+}
+
+.form-control-lg:focus {
+  border-color: #38ef7d;
+  box-shadow: 0 0 0 0.25rem rgba(56, 239, 125, 0.25);
+}
+
+.badge {
+  padding: 8px 15px;
+  border-radius: 10px;
+}
+
+.alert {
+  border-radius: 15px;
+  border: none;
+}
+
+.progress {
+  background-color: #f1f5f9;
+}

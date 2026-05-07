@@ -5,6 +5,34 @@ from tareas.models import Nino, Tarea
 from tareas.serializers import TareaSerializer
 
 
+class NinoSerializer(serializers.ModelSerializer):
+    tareas = TareaSerializer(many=True, read_only=True)
+    estadisticas = serializers.SerializerMethodField()
+    profesor = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Nino
+        fields = ['id', 'nombre', 'apellido', 'pin', 'monedas', 'nivel', 'experiencia', 'avatar', 'racha_dias', 'tareas', 'estadisticas', 'profesor']
+
+    def get_estadisticas(self, obj):
+        return {
+            'monedas': obj.monedas,
+            'nivel': obj.nivel,
+            'experiencia': obj.experiencia,
+            'racha_dias': obj.racha_dias
+        }
+    
+    def get_profesor(self, obj):
+        if obj.profesor:
+            return {
+                'id': obj.profesor.id,
+                'nombre': obj.profesor.nombre,
+                'apellido': obj.profesor.apellido,
+                'email': obj.profesor.email
+            }
+        return None
+
+
 class UserSerializer(serializers.ModelSerializer):
     hijos = serializers.SerializerMethodField()
 
@@ -16,23 +44,6 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.role == 'padre':
             return NinoSerializer(obj.hijos.all(), many=True).data
         return []
-
-
-class NinoSerializer(serializers.ModelSerializer):
-    tareas = TareaSerializer(many=True, read_only=True)
-    estadisticas = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Nino
-        fields = ['id', 'nombre', 'apellido', 'pin', 'profesor_id', 'profesor', 'tareas', 'estadisticas']
-
-    def get_estadisticas(self, obj):
-        return {
-            'monedas': obj.monedas,
-            'nivel': obj.nivel,
-            'experiencia': obj.experiencia,
-            'racha_dias': obj.racha_dias
-        }
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -48,9 +59,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         if user.role == 'padre':
             for hijo_data in hijos_data:
-                profesor_id = hijo_data.pop('profesor_id')
-                profesor = User.objects.get(id=profesor_id, role='profesor')
-                Nino.objects.create(padre=user, profesor=profesor, **hijo_data)
+                # Si viene profesor_id lo usamos para asignar el profesor
+                profesor_id = hijo_data.pop('profesor_id', None)
+                if profesor_id:
+                    profesor = User.objects.get(id=profesor_id, role='profesor')
+                    Nino.objects.create(padre=user, profesor=profesor, **hijo_data)
+                else:
+                    Nino.objects.create(padre=user, **hijo_data)
         return user
 
 
@@ -66,9 +81,3 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Usuario suspendido')
         data['user'] = user
         return data
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'nombre', 'apellido', 'email', 'carnet', 'numero', 'role', 'activo']

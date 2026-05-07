@@ -1,80 +1,129 @@
-<div class="avatar-wrapper">
-  <svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg" class="avatar-svg">
+<div class="companion-bubble">
+  <!-- Burbuja de mensaje -->
+  <div class="speech-bubble" [class.visible]="mensajeVisible">
+    {{ mensajeActual }}
+  </div>
 
-    <!-- Brazos -->
-    <rect x="14" y="76" width="16" height="30" rx="10" [attr.fill]="avatar.skin"/>
-    <rect x="70" y="76" width="16" height="30" rx="10" [attr.fill]="avatar.skin"/>
+  <!-- Cuerpo del personaje -->
+  <div class="character-wrap" [ngClass]="['expr-' + expresion, 'monster-' + avatar.tipo]">
+    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" class="character-svg">
+      <defs>
+        <radialGradient id="monsterGrad" cx="35%" cy="35%" r="60%">
+          <stop offset="0%"   [attr.stop-color]="lighten(avatar.color)" stop-opacity="1"/>
+          <stop offset="100%" [attr.stop-color]="avatar.color" stop-opacity="1"/>
+        </radialGradient>
+        <filter id="monsterShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="rgba(0,0,0,0.2)"/>
+        </filter>
+      </defs>
 
-    <!-- Cuerpo -->
-    <rect x="28" y="72" width="44" height="40" rx="18" [attr.fill]="avatar.shirtColor"/>
-    <rect x="28" y="72" width="44" height="20" rx="18" fill="rgba(255,255,255,0.18)"/>
+      <!-- Sombra suelo -->
+      <ellipse cx="60" cy="115" rx="35" ry="5" fill="rgba(0,0,0,0.15)"/>
 
-    <!-- Cabeza -->
-    <circle cx="50" cy="44" r="22" [attr.fill]="avatar.skin"/>
+      <!-- CUERPO SEGÚN TIPO -->
+      <g [ngSwitch]="avatar.tipo" filter="url(#monsterShadow)">
+        <!-- Blob (Gloop) -->
+        <path *ngSwitchCase="'blob'" 
+              d="M30 40 Q30 20 60 20 Q90 20 90 40 Q90 80 80 95 Q60 110 40 95 Q30 80 30 40" 
+              fill="url(#monsterGrad)"/>
+        
+        <!-- Horn (Zorg) -->
+        <g *ngSwitchCase="'horn'">
+          <path d="M30 30 L45 10 L50 30 Z" [attr.fill]="darken(avatar.color)"/>
+          <path d="M90 30 L75 10 L70 30 Z" [attr.fill]="darken(avatar.color)"/>
+          <rect x="30" y="30" width="60" height="70" rx="15" fill="url(#monsterGrad)"/>
+        </g>
 
-    <!-- Pelo -->
-    <ng-container [ngSwitch]="avatar.hairStyle">
-      <ng-container *ngSwitchCase="'long'">
-        <path d="M24 46 C24 22 40 18 50 18 C60 18 76 22 76 46 C76 62 70 66 66 68 C60 72 50 74 50 74 C50 74 40 72 34 68 C30 66 24 62 24 46 Z" [attr.fill]="avatar.hairColor"/>
-      </ng-container>
-      <ng-container *ngSwitchCase="'curly'">
-        <circle cx="30" cy="30" r="10" [attr.fill]="avatar.hairColor"/>
-        <circle cx="50" cy="22" r="12" [attr.fill]="avatar.hairColor"/>
-        <circle cx="70" cy="30" r="10" [attr.fill]="avatar.hairColor"/>
-      </ng-container>
-      <ng-container *ngSwitchCase="'spiky'">
-        <path d="M24 46 L34 18 L44 46 L54 18 L64 46 L74 24 L76 46 Q76 55 70 60 Q60 66 50 66 Q40 66 30 60 Q24 55 24 46 Z" [attr.fill]="avatar.hairColor"/>
-      </ng-container>
-      <ng-container *ngSwitchCase="'short'">
-        <path d="M24 40 C30 20 38 20 50 24 C62 20 70 20 76 40 C76 50 70 56 50 56 C30 56 24 50 24 40 Z" [attr.fill]="avatar.hairColor"/>
-      </ng-container>
-    </ng-container>
+        <!-- Fluff (Fluff) -->
+        <g *ngSwitchCase="'fluff'">
+          <circle cx="60" cy="60" r="45" fill="url(#monsterGrad)"/>
+          <!-- "Pelos" decorativos -->
+          <circle *ngFor="let i of [0,45,90,135,180,225,270,315]" 
+                  [attr.cx]="60 + 42 * cos(i)" 
+                  [attr.cy]="60 + 42 * sin(i)" 
+                  r="12" [attr.fill]="avatar.color"/>
+        </g>
 
-    <!-- Rostro -->
-    <g *ngIf="!parpadeando">
-      <circle cx="36" cy="44" r="5" fill="white"/>
-      <circle cx="64" cy="44" r="5" fill="white"/>
-      <circle cx="36" cy="44" r="2.5" fill="#1a1a2e"/>
-      <circle cx="64" cy="44" r="2.5" fill="#1a1a2e"/>
-    </g>
-    <g *ngIf="parpadeando">
-      <line x1="30" y1="44" x2="42" y2="44" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
-      <line x1="58" y1="44" x2="70" y2="44" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
-    </g>
+        <!-- Ear (Pip) -->
+        <g *ngSwitchCase="'ear'">
+          <ellipse cx="40" cy="30" rx="15" ry="25" [attr.fill]="avatar.color" transform="rotate(-20, 40, 30)"/>
+          <ellipse cx="80" cy="30" rx="15" ry="25" [attr.fill]="avatar.color" transform="rotate(20, 80, 30)"/>
+          <circle cx="60" cy="70" r="40" fill="url(#monsterGrad)"/>
+        </g>
+      </g>
 
-    <!-- Expresiones -->
-    <ng-container [ngSwitch]="expresion">
-      <ng-container *ngSwitchCase="'guino'">
-        <line x1="58" y1="44" x2="66" y2="44" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
-        <path d="M38 60 Q50 68 62 60" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
-      </ng-container>
-      <ng-container *ngSwitchCase="'sorprendido'">
-        <ellipse cx="36" cy="44" rx="5" ry="6" fill="white"/>
-        <ellipse cx="64" cy="44" rx="5" ry="6" fill="white"/>
-        <circle cx="36" cy="44" r="2.5" fill="#1a1a2e"/>
-        <circle cx="64" cy="44" r="2.5" fill="#1a1a2e"/>
-        <ellipse cx="50" cy="60" rx="5" ry="6" fill="#1a1a2e"/>
-      </ng-container>
-      <ng-container *ngSwitchCase="'pensando'">
-        <path d="M40 60 Q50 56 60 60" stroke="#1a1a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      </ng-container>
-      <ng-container *ngSwitchCase="'triste'">
-        <path d="M40 62 Q50 56 60 62" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
-      </ng-container>
-      <ng-container *ngSwitchCase="'enojado'">
-        <path d="M34 38 L42 34" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
-        <path d="M58 34 L66 38" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round"/>
-        <path d="M40 62 L60 62" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
-      </ng-container>
-      <ng-container *ngSwitchDefault>
-        <path d="M38 60 Q50 68 62 60" stroke="#1a1a2e" stroke-width="3" fill="none" stroke-linecap="round"/>
-      </ng-container>
-    </ng-container>
+      <!-- CARA -->
+      <g class="face">
+        <!-- OJOS -->
+        <g class="eyes">
+          <!-- Ojo izquierdo -->
+          <g transform="translate(42, 50)">
+            <ng-container [ngSwitch]="expresion">
+              <!-- Alegre: ^ -->
+              <path *ngSwitchCase="'alegre'" d="M-8 4 Q0 -8 8 4" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+              <!-- Sorprendido: O -->
+              <circle *ngSwitchCase="'sorprendido'" r="12" fill="white" stroke="#1e293b" stroke-width="1"/>
+              <circle *ngSwitchCase="'sorprendido'" r="6" fill="#1e293b"/>
+              <!-- Normal / Otros -->
+              <ng-container *ngSwitchDefault>
+                <ellipse cx="0" cy="0" rx="10" ry="12" fill="white"/>
+                <circle [attr.cx]="parpadeando ? 0 : 2" [attr.cy]="parpadeando ? 0 : 2" r="5" fill="#1e293b"/>
+                <circle cx="3" cy="-3" r="2" fill="white" opacity="0.8"/>
+                <rect *ngIf="parpadeando" x="-10" y="-12" width="20" height="24" [attr.fill]="avatar.color"/>
+              </ng-container>
+            </ng-container>
+          </g>
+          <!-- Ojo derecho -->
+          <g transform="translate(78, 50)">
+            <ng-container [ngSwitch]="expresion">
+              <!-- Alegre: ^ -->
+              <path *ngSwitchCase="'alegre'" d="M-8 4 Q0 -8 8 4" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+              <!-- Sorprendido: O -->
+              <circle *ngSwitchCase="'sorprendido'" r="12" fill="white" stroke="#1e293b" stroke-width="1"/>
+              <circle *ngSwitchCase="'sorprendido'" r="6" fill="#1e293b"/>
+              <!-- Normal / Otros -->
+              <ng-container *ngSwitchDefault>
+                <ellipse cx="0" cy="0" rx="10" ry="12" fill="white"/>
+                <circle [attr.cx]="parpadeando ? 0 : -2" [attr.cy]="parpadeando ? 0 : 2" r="5" fill="#1e293b"/>
+                <circle cx="-3" cy="-3" r="2" fill="white" opacity="0.8"/>
+                <rect *ngIf="parpadeando" x="-10" y="-12" width="20" height="24" [attr.fill]="avatar.color"/>
+              </ng-container>
+            </ng-container>
+          </g>
+        </g>
 
-    <!-- Mejillas -->
-    <circle cx="32" cy="52" r="4" fill="#FFB3BA" opacity="0.8"/>
-    <circle cx="68" cy="52" r="4" fill="#FFB3BA" opacity="0.8"/>
-  </svg>
+        <!-- BOCA SEGÚN EXPRESIÓN -->
+        <g class="mouth" [ngSwitch]="expresion" transform="translate(60, 75)">
+          <!-- Feliz -->
+          <path *ngSwitchDefault d="M-15 5 Q0 20 15 5" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+          
+          <!-- Alegre -->
+          <path *ngSwitchCase="'alegre'" d="M-18 0 Q0 25 18 0 Z" fill="#ff6b9d" stroke="#1e293b" stroke-width="3"/>
+          
+          <!-- Triste -->
+          <path *ngSwitchCase="'triste'" d="M-12 15 Q0 0 12 15" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+          
+          <!-- Sorprendido -->
+          <circle *ngSwitchCase="'sorprendido'" r="8" fill="#1e293b"/>
+          
+          <!-- Enojado -->
+          <path *ngSwitchCase="'enojado'" d="M-15 10 L0 5 L15 10" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+          
+          <!-- Pensando -->
+          <path *ngSwitchCase="'pensando'" d="M-10 5 H10" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round"/>
+        </g>
+      </g>
 
-  <div class="avatar-name">{{ displayName ?? avatar.nombre }}</div>
+      <!-- Detalle extra: coloretes -->
+      <g opacity="0.4" *ngIf="expresion === 'alegre' || expresion === 'feliz'">
+        <circle cx="35" cy="65" r="6" fill="#ff8fab"/>
+        <circle cx="85" cy="65" r="6" fill="#ff8fab"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Nombre -->
+  <div class="companion-name" [style.background]="avatar.color">
+    {{ displayName ?? avatar.nombre }}
+  </div>
 </div>

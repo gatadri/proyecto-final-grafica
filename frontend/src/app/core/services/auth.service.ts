@@ -56,6 +56,11 @@ export class AuthService {
   isNinoLoggedIn(): boolean { return !!this.getNino(); }
   getRole(): string | null  { return this.getUser()?.role ?? null; }
 
+  saveNino(nino: Nino): void {
+    localStorage.setItem('nino', JSON.stringify(nino));
+    this.ninoSubject.next(nino);
+  }
+
   redirectByRole(): void {
     const role = this.getRole();
     if (role) this.router.navigate([`/${role}/dashboard`]);

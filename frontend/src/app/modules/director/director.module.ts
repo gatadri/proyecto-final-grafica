@@ -10,6 +10,7 @@ import { UsuariosComponent } from './usuarios/usuarios.component';
 import { InventarioDirectorComponent } from './inventario/inventario-director.component';
 import { EstadisticasComponent } from './estadisticas/estadisticas.component';
 import { LogsComponent } from './logs/logs.component';
+import { ReportesComponent } from './reportes/reportes.component';
 
 const routes: Routes = [
   {
@@ -20,6 +21,7 @@ const routes: Routes = [
       { path: 'usuarios',    component: UsuariosComponent },
       { path: 'inventario',  component: InventarioDirectorComponent },
       { path: 'estadisticas',component: EstadisticasComponent },
+      { path: 'reportes',    component: ReportesComponent },
       { path: 'logs',        component: LogsComponent },
       { path: '',            redirectTo: 'dashboard', pathMatch: 'full' }
     ]
@@ -34,6 +36,7 @@ const routes: Routes = [
     UsuariosComponent,
     InventarioDirectorComponent,
     EstadisticasComponent,
+    ReportesComponent,
     LogsComponent
   ]
 })
