@@ -1,0 +1,227 @@
+CORRECCIONES REALIZADAS - PROFESOR E INVENTARIO
+================================================
+
+FECHA: 2024
+ESTADO: ✓ COMPLETADO
+
+═══════════════════════════════════════════════════════════════════
+
+1. PROBLEMA: ESTUDIANTES NO APARECEN EN INTERFAZ DEL PROFESOR
+═══════════════════════════════════════════════════════════════════
+
+CAUSA:
+- Los componentes usaban MockDataService en lugar de ApiService
+- Los datos no se cargaban desde la base de datos real
+
+SOLUCIÓN:
+✓ Reemplazado MockDataService por ApiService en:
+  - estudiantes.component.ts
+  - profesor-dashboard.component.ts
+
+✓ Implementado método cargarEstudiantes() que usa:
+  - Endpoint: GET /api/profesor/estudiantes
+  - Retorna lista de niños asignados al profesor autenticado
+
+VERIFICACIÓN:
+- Script creado: contar_ninos_profesor.py
+- Confirmado que los niños SÍ están asignados en la BD
+- Ejemplo: Carlos Profesor tiene 7 niños asignados
+
+ARCHIVOS MODIFICADOS:
+✓ frontend/src/app/modules/profesor/estudiantes/estudiantes.component.ts
+✓ frontend/src/app/modules/profesor/dashboard/profesor-dashboard.component.ts
+
+═══════════════════════════════════════════════════════════════════
+
+2. PROBLEMA: FORMULARIO DE INVENTARIO CON CAMPOS INNECESARIOS
+═══════════════════════════════════════════════════════════════════
+
+REQUERIMIENTO:
+- Subir imágenes JPG/PNG directamente
+- Eliminar campo "PDF Template"
+- Eliminar campo "Categoría"
+- Simplificar el formulario
+
+SOLUCIÓN BACKEND:
+✓ Agregado soporte para MultiPartParser y FormParser
+✓ Endpoint acepta archivos de imagen vía FormData
+✓ Imágenes se guardan automáticamente en:
+  - Skins: frontend/public/imagenes/avatares/
+  - Stickers: frontend/public/imagenes/stickers/
+✓ Nombres de archivo únicos con timestamp
+✓ avatar_key se genera automáticamente del nombre
+
+SOLUCIÓN FRONTEND:
+✓ Reemplazado input de texto por input de archivo
+✓ Validación de tipo de archivo (solo imágenes)
+✓ Preview de imagen antes de subir
+✓ Eliminados campos:
+  - PDF Template
+  - Categoría
+  - Imagen (texto) → Reemplazado por file input
+  - avatar_key (texto) → Generado automáticamente
+
+ARCHIVOS MODIFICADOS:
+✓ backend/tareas/views.py
+  - Agregado MultiPartParser, FormParser
+  - Lógica de guardado de archivos
+  - Generación automática de nombres
+
+✓ backend/backend_django/settings.py
+  - Configuración MEDIA_URL y MEDIA_ROOT
+
+✓ frontend/.../inventario-profesor.component.ts
+  - Método onFileSelected()
+  - Preview de imagen
+  - Envío con FormData
+
+✓ frontend/.../inventario-profesor.component.html
+  - Input type="file"
+  - Preview de imagen
+  - Campos simplificados
+
+═══════════════════════════════════════════════════════════════════
+
+3. FLUJO DE CREACIÓN DE SKIN/STICKER
+═══════════════════════════════════════════════════════════════════
+
+NUEVO FLUJO:
+
+1. Usuario hace clic en "Nuevo Ítem"
+2. Selecciona tipo (Skin o Sticker)
+3. Completa campos:
+   - Nombre *
+   - Rareza (Común/Raro/Legendario)
+   - Precio
+   - Imagen * (archivo JPG/PNG)
+   - Descripción
+4. Selecciona archivo de imagen
+5. Ve preview de la imagen
+6. Hace clic en "Guardar"
+7. Backend:
+   - Recibe FormData
+   - Guarda imagen con nombre único
+   - Genera avatar_key automáticamente (para skins)
+   - Crea registro en BD
+8. Frontend actualiza lista
+
+CAMPOS AUTOMÁTICOS:
+- avatar_key: nombre.toLowerCase().replace(/\s+/g, '_')
+- Nombre de archivo: tipo_timestamp_nombreoriginal.ext
+- Ruta: imagenes/avatares/ o imagenes/stickers/
+
+═══════════════════════════════════════════════════════════════════
+
+4. VALIDACIONES IMPLEMENTADAS
+═══════════════════════════════════════════════════════════════════
+
+FRONTEND:
+✓ Nombre requerido
+✓ Precio mínimo 0
+✓ Archivo de imagen requerido (solo para crear)
+✓ Tipo de archivo debe ser imagen
+✓ Preview antes de subir
+
+BACKEND:
+✓ Validación de tipo de archivo
+✓ Generación de nombres únicos
+✓ Manejo de errores
+✓ Respuestas con mensajes claros
+
+═══════════════════════════════════════════════════════════════════
+
+5. ESTRUCTURA DE ARCHIVOS
+═══════════════════════════════════════════════════════════════════
+
+ANTES:
+frontend/public/imagenes/
+├── avatares/
+│   ├── nino.png
+│   ├── nina.png
+│   └── astronauta.png
+└── stickers/
+    ├── sticker1.png
+    └── sticker2.png
+
+DESPUÉS (con archivos subidos):
+frontend/public/imagenes/
+├── avatares/
+│   ├── nino.png
+│   ├── nina.png
+│   ├── astronauta.png
+│   ├── skin_1234567890_pirata.png
+│   └── skin_1234567891_robot.png
+└── stickers/
+    ├── sticker1.png
+    ├── sticker2.png
+    ├── sticker_1234567892_estrella.png
+    └── sticker_1234567893_cohete.png
+
+═══════════════════════════════════════════════════════════════════
+
+6. EJEMPLO DE USO
+═══════════════════════════════════════════════════════════════════
+
+CREAR NUEVA SKIN:
+
+1. Formulario:
+   - Tipo: Skin
+   - Nombre: "Astronauta Espacial"
+   - Rareza: Legendario
+   - Precio: 500
+   - Imagen: [Seleccionar astronauta.jpg]
+   - Descripción: "Explora el espacio"
+
+2. Backend procesa:
+   - Guarda: imagenes/avatares/skin_1234567890_astronauta.jpg
+   - avatar_key: "astronauta_espacial"
+   - Crea registro en BD
+
+3. Resultado en BD:
+   {
+     "nombre": "Astronauta Espacial",
+     "descripcion": "Explora el espacio",
+     "imagen": "skin_1234567890_astronauta.jpg",
+     "avatar_key": "astronauta_espacial",
+     "precio": 500,
+     "rareza": "legendario",
+     "activo": true
+   }
+
+═══════════════════════════════════════════════════════════════════
+
+7. ENDPOINTS ACTUALIZADOS
+═══════════════════════════════════════════════════════════════════
+
+GET /api/profesor/estudiantes
+  - Retorna lista de niños del profesor autenticado
+  - Incluye: nombre, apellido, grado, monedas, nivel, experiencia, racha
+
+POST /api/inventario/tienda
+  - Content-Type: multipart/form-data
+  - Campos:
+    * tipo: 'skin' | 'sticker'
+    * nombre: string
+    * descripcion: string
+    * precio: number
+    * rareza: 'comun' | 'raro' | 'legendario'
+    * imagen: File
+    * avatar_key: string (opcional, se genera automático)
+
+═══════════════════════════════════════════════════════════════════
+
+8. SCRIPTS DE VERIFICACIÓN
+═══════════════════════════════════════════════════════════════════
+
+contar_ninos_profesor.py
+  - Cuenta niños por profesor
+  - Muestra asignaciones
+  - Asigna niños sin profesor al primer profesor disponible
+
+Uso:
+$ cd backend
+$ python contar_ninos_profesor.py
+
+═══════════════════════════════════════════════════════════════════
+
+TODAS LAS CORRECCIONES COMPLETADAS ✓

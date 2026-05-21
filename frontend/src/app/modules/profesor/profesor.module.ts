@@ -9,6 +9,8 @@ import { ProfesorDashboardComponent } from './dashboard/profesor-dashboard.compo
 import { TareasComponent } from './tareas/tareas.component';
 import { EstudiantesComponent } from './estudiantes/estudiantes.component';
 import { InventarioProfesorComponent } from './inventario/inventario-profesor.component';
+import { ReportesProfesorComponent } from './reportes/reportes-profesor.component';
+import { TutorialProfesorComponent } from './tutorial/tutorial-profesor.component';
 
 const routes: Routes = [
   {
@@ -19,6 +21,8 @@ const routes: Routes = [
       { path: 'tareas',     component: TareasComponent },
       { path: 'estudiantes',component: EstudiantesComponent },
       { path: 'inventario', component: InventarioProfesorComponent },
+      { path: 'reportes',   component: ReportesProfesorComponent },
+      { path: 'tutorial',   component: TutorialProfesorComponent },
       { path: '',           redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }
@@ -31,7 +35,9 @@ const routes: Routes = [
     ProfesorDashboardComponent,
     TareasComponent,
     EstudiantesComponent,
-    InventarioProfesorComponent
+    InventarioProfesorComponent,
+    ReportesProfesorComponent,
+    TutorialProfesorComponent
   ]
 })
 export class ProfesorModule {}

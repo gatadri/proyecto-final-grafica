@@ -22,6 +22,8 @@ export class ProfesorLayoutComponent {
     { label: 'Dashboard',        icon: 'tachometer-alt', route: '/profesor/dashboard'  },
     { label: 'Mis Tareas',       icon: 'tasks',          route: '/profesor/tareas'     },
     { label: 'Mis Estudiantes',  icon: 'users',          route: '/profesor/estudiantes'},
-    { label: 'Inventario Tienda',icon: 'store',          route: '/profesor/inventario' }
+    { label: 'Inventario Tienda',icon: 'store',          route: '/profesor/inventario' },
+    { label: 'Reporte de Clase', icon: 'chart-bar',      route: '/profesor/reportes'   },
+    { label: 'Tutorial',         icon: 'graduation-cap', route: '/profesor/tutorial'   }
   ];
 }

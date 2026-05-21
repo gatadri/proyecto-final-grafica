@@ -21,9 +21,9 @@ export class DirectorLayoutComponent {
   menu: MenuItem[] = [
     { label: 'Dashboard',          icon: 'tachometer-alt',  route: '/director/dashboard'    },
     { label: 'Gestión de Usuarios',icon: 'users',           route: '/director/usuarios'     },
-    { label: 'Inventario Tienda',  icon: 'store',           route: '/director/inventario'   },
     { label: 'Estadísticas',       icon: 'chart-line',      route: '/director/estadisticas' },
     { label: 'Reportes',           icon: 'chart-bar',       route: '/director/reportes'     },
-    { label: 'Log de Actividades', icon: 'history',         route: '/director/logs'         }
+    { label: 'Log de Actividades', icon: 'history',         route: '/director/logs'         },
+    { label: 'Tutorial',           icon: 'graduation-cap',  route: '/director/tutorial'     }
   ];
 }

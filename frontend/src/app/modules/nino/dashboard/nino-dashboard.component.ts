@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
+import { AudioService, AudioType } from '../../../core/services/audio.service';
 import { Tarea } from '../../../core/models';
 import { Subject, interval, takeUntil } from 'rxjs';
 
@@ -26,19 +27,51 @@ export class NinoDashboardComponent implements OnInit, OnDestroy {
   loading = true;
   private destroy$ = new Subject<void>();
 
-  constructor(private auth: AuthService, private api: ApiService) {}
+  constructor(
+    private auth: AuthService, 
+    private api: ApiService,
+    public audioService: AudioService
+  ) {}
 
   ngOnInit(): void {
     this.nino = this.auth.getNino();
     if (this.nino) {
       this.cargarTareas();
       interval(2000).pipe(takeUntil(this.destroy$)).subscribe(() => this.cargarTareas());
+      
+      // Reproducir audio general por defecto al entrar
+      this.iniciarAudioGeneral();
     }
+  }
+
+  private iniciarAudioGeneral(): void {
+    // Intentar reproducir inmediatamente
+    setTimeout(() => {
+      if (!this.audioService.getCurrentAudioType() || 
+          this.audioService.getCurrentAudioType() === AudioType.GENERAL) {
+        this.audioService.play(AudioType.GENERAL);
+      }
+    }, 100);
+
+    // Si falla por políticas del navegador, intentar en el primer clic
+    const intentarReproducir = () => {
+      if (!this.audioService.isPlaying(AudioType.GENERAL) && 
+          !this.audioService.getCurrentAudioType()) {
+        this.audioService.play(AudioType.GENERAL);
+      }
+      // Remover el listener después del primer intento
+      document.removeEventListener('click', intentarReproducir);
+    };
+    
+    document.addEventListener('click', intentarReproducir, { once: true });
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    // NO pausar el audio general al salir del dashboard
+    // Se mantendrá sonando en otras secciones del niño
+    // Solo se pausa si el usuario hace clic en el botón o hace logout
   }
 
   private cargarTareas(): void {
@@ -80,5 +113,19 @@ export class NinoDashboardComponent implements OnInit, OnDestroy {
     return this.totalTareasAsignadas;
   }
 
-  logout(): void { this.auth.ninoLogout(); }
+  logout(): void { 
+    this.audioService.stopAll();
+    this.auth.ninoLogout(); 
+  }
+
+  toggleMusic(): void {
+    console.log('Toggle music clicked');
+    console.log('Current state:', this.isMusicPlaying);
+    this.audioService.toggle(AudioType.GENERAL);
+    console.log('New state:', this.isMusicPlaying);
+  }
+
+  get isMusicPlaying(): boolean {
+    return this.audioService.isPlaying(AudioType.GENERAL);
+  }
 }

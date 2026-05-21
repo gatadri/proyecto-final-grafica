@@ -1,0 +1,235 @@
+SISTEMA DE AUDIO DE FONDO - IMPLEMENTACIÓN COMPLETA
+===================================================
+
+FECHA: 2024
+ESTADO: ✓ COMPLETAMENTE FUNCIONAL
+
+═══════════════════════════════════════════════════════════════════
+
+1. ARCHIVOS DE AUDIO
+═══════════════════════════════════════════════════════════════════
+
+Ubicación: /public/audios/
+
+✓ audio general.mp3      - Audio de fondo para dashboard del niño
+✓ audio tutoriales.mp3   - Audio de fondo para todos los tutoriales
+✓ audio ejercicios.mp3   - Audio de fondo para tareas y prácticas
+
+═══════════════════════════════════════════════════════════════════
+
+2. SERVICIO DE AUDIO (AudioService)
+═══════════════════════════════════════════════════════════════════
+
+Ubicación: src/app/core/services/audio.service.ts
+
+Características:
+✓ Servicio centralizado para gestionar todos los audios
+✓ Tres tipos de audio: GENERAL, TUTORIALES, EJERCICIOS
+✓ Volumen bajo automático (20%)
+✓ Reproducción en loop
+✓ Persistencia de estado en localStorage
+✓ Control de reproducción/pausa
+✓ Detención automática al cambiar de audio
+
+Métodos principales:
+- play(type): Reproduce un audio específico
+- pause(type): Pausa un audio específico
+- toggle(type): Alterna entre reproducir/pausar
+- stopAll(): Detiene todos los audios
+- isPlaying(type): Verifica si un audio está sonando
+- isEnabled(type): Verifica si un audio estaba activado
+- setVolume(type, volume): Ajusta el volumen
+
+═══════════════════════════════════════════════════════════════════
+
+3. IMPLEMENTACIÓN POR SECCIÓN
+═══════════════════════════════════════════════════════════════════
+
+A) DASHBOARD DEL NIÑO
+   Archivo: nino-dashboard.component.ts/html
+   Audio: GENERAL (audio general.mp3)
+   Tipo: Manual con botón flotante
+   
+   Características:
+   ✓ Botón flotante en esquina inferior derecha
+   ✓ Diseño circular con gradiente
+   ✓ Animación pulse cuando está activo
+   ✓ Iconos: fa-music (activo) / fa-volume-mute (inactivo)
+   ✓ Se reproduce automáticamente si estaba activado
+   ✓ Se pausa al salir del dashboard
+   ✓ Se detiene completamente al hacer logout
+
+B) TUTORIALES (Todos los usuarios)
+   Archivos modificados:
+   - nino-tutorial.component.ts/html
+   - tutorial-profesor.component.ts/html
+   - tutorial-padre.component.ts/html
+   - tutorial-director.component.ts/html
+   
+   Audio: TUTORIALES (audio tutoriales.mp3)
+   Tipo: Manual con botón en encabezado
+   
+   Características:
+   ✓ Botón en la parte superior del tutorial
+   ✓ Texto: "Reproducir música" / "Pausar música"
+   ✓ Iconos: fa-volume-up (activo) / fa-volume-mute (inactivo)
+   ✓ Se reproduce automáticamente si estaba activado
+   ✓ Se pausa al salir del tutorial
+   ✓ Estado persistente entre sesiones
+
+C) TAREAS Y PRÁCTICAS
+   Archivos modificados:
+   - nino-tarea.component.ts
+   - nino-practica.component.ts
+   
+   Audio: EJERCICIOS (audio ejercicios.mp3)
+   Tipo: Automático (sin botón)
+   
+   Características:
+   ✓ Se reproduce AUTOMÁTICAMENTE al entrar
+   ✓ Volumen bajo (20%)
+   ✓ No hay botón de control (permanente)
+   ✓ Se pausa automáticamente al salir
+   ✓ Funciona tanto en tareas como en prácticas
+
+═══════════════════════════════════════════════════════════════════
+
+4. CARACTERÍSTICAS TÉCNICAS
+═══════════════════════════════════════════════════════════════════
+
+Volumen:
+- Todos los audios: 20% (0.2)
+- Configurable mediante setVolume()
+
+Loop:
+- Todos los audios se repiten infinitamente
+- Propiedad: audio.loop = true
+
+Persistencia:
+- Estados guardados en localStorage
+- Clave: 'audioStates'
+- Se restauran al recargar la página
+
+Gestión de memoria:
+- Solo un audio puede sonar a la vez
+- Al reproducir uno nuevo, se detiene el anterior
+- Se pausan al destruir componentes (ngOnDestroy)
+
+═══════════════════════════════════════════════════════════════════
+
+5. FLUJO DE USUARIO
+═══════════════════════════════════════════════════════════════════
+
+NIÑO - Dashboard:
+1. Entra al dashboard
+2. Ve botón flotante de música
+3. Hace clic para activar/desactivar
+4. Audio se reproduce en loop
+5. Estado se guarda
+6. Al volver, se restaura el estado
+
+NIÑO - Tutorial:
+1. Entra al tutorial
+2. Ve botón de música en encabezado
+3. Hace clic para activar/desactivar
+4. Audio se reproduce en loop
+5. Estado se guarda
+6. Al volver, se restaura el estado
+
+NIÑO - Tareas/Prácticas:
+1. Entra a una tarea o práctica
+2. Audio se reproduce AUTOMÁTICAMENTE
+3. No hay control manual
+4. Audio continúa durante toda la sesión
+5. Se detiene al salir
+
+PROFESOR/PADRE/DIRECTOR - Tutorial:
+1. Entra al tutorial
+2. Ve botón de música en encabezado
+3. Hace clic para activar/desactivar
+4. Audio se reproduce en loop
+5. Estado se guarda
+6. Al volver, se restaura el estado
+
+═══════════════════════════════════════════════════════════════════
+
+6. ESTILOS CSS
+═══════════════════════════════════════════════════════════════════
+
+Botón flotante (Dashboard):
+.btn-music {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 3px solid white;
+  color: white;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+
+Animación pulse:
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(102, 126, 234, 0.8);
+  }
+}
+
+═══════════════════════════════════════════════════════════════════
+
+7. ARCHIVOS MODIFICADOS/CREADOS
+═══════════════════════════════════════════════════════════════════
+
+NUEVO:
+✓ src/app/core/services/audio.service.ts
+
+MODIFICADOS:
+✓ nino-dashboard.component.ts
+✓ nino-dashboard.component.html
+✓ nino-tutorial.component.ts
+✓ nino-tutorial.component.html
+✓ nino-tarea.component.ts
+✓ nino-practica.component.ts
+✓ tutorial-profesor.component.ts
+✓ tutorial-profesor.component.html
+✓ tutorial-padre.component.ts
+✓ tutorial-padre.component.html
+✓ tutorial-director.component.ts
+✓ tutorial-director.component.html
+
+═══════════════════════════════════════════════════════════════════
+
+8. VENTAJAS DEL SISTEMA
+═══════════════════════════════════════════════════════════════════
+
+✓ Mejora la experiencia de usuario
+✓ Ambiente más agradable para aprender
+✓ Volumen bajo no distrae
+✓ Control total del usuario (excepto en ejercicios)
+✓ Persistencia de preferencias
+✓ Gestión eficiente de memoria
+✓ Fácil de mantener y extender
+✓ Código centralizado y reutilizable
+
+═══════════════════════════════════════════════════════════════════
+
+9. POSIBLES MEJORAS FUTURAS
+═══════════════════════════════════════════════════════════════════
+
+- Control de volumen deslizable
+- Más opciones de música
+- Efectos de sonido para acciones
+- Música diferente por nivel del niño
+- Modo silencioso global
+- Fade in/fade out al cambiar audios
+
+═══════════════════════════════════════════════════════════════════
+
+SISTEMA COMPLETAMENTE FUNCIONAL ✓

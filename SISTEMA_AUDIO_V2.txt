@@ -1,0 +1,221 @@
+SISTEMA DE AUDIO - COMPORTAMIENTO ACTUALIZADO
+==============================================
+
+FECHA: 2024
+VERSIÓN: 2.0 - Audio General por Defecto
+
+═══════════════════════════════════════════════════════════════════
+
+COMPORTAMIENTO DEL AUDIO GENERAL (Dashboard del Niño)
+═══════════════════════════════════════════════════════════════════
+
+✓ ENCENDIDO POR DEFECTO
+  - Al entrar al dashboard, el audio general se reproduce automáticamente
+  - Primera vez: Se activa y guarda en localStorage
+  - Visitas posteriores: Se mantiene el estado guardado
+
+✓ BOTÓN DE CONTROL
+  - Ubicación: Esquina inferior derecha
+  - Estado ENCENDIDO: Ícono fa-volume-up, color verde
+  - Estado APAGADO: Ícono fa-volume-mute, color morado
+  - Al hacer clic: Alterna entre encendido/apagado
+
+✓ PERSISTENCIA ENTRE SECCIONES
+  - El audio general NO se detiene al navegar a otras secciones
+  - Continúa sonando en: Logros, Tienda, Aprender, etc.
+  - Solo se detiene si:
+    * El usuario hace clic en el botón para apagarlo
+    * El usuario hace logout
+    * Se reproduce otro audio (tutoriales o ejercicios)
+
+═══════════════════════════════════════════════════════════════════
+
+COMPORTAMIENTO EN TUTORIALES
+═══════════════════════════════════════════════════════════════════
+
+✓ AL ENTRAR AL TUTORIAL
+  - El audio de tutoriales reemplaza al audio general
+  - Botón manual para activar/desactivar
+
+✓ AL SALIR DEL TUTORIAL
+  - El audio de tutoriales se detiene
+  - El audio general se REACTIVA automáticamente
+  - El niño vuelve a escuchar el audio general
+
+═══════════════════════════════════════════════════════════════════
+
+COMPORTAMIENTO EN TAREAS Y PRÁCTICAS
+═══════════════════════════════════════════════════════════════════
+
+✓ AL ENTRAR A TAREA/PRÁCTICA
+  - El audio de ejercicios se reproduce AUTOMÁTICAMENTE
+  - Reemplaza al audio general
+  - No hay botón de control (permanente)
+
+✓ AL SALIR DE TAREA/PRÁCTICA
+  - El audio de ejercicios se detiene
+  - El audio general se REACTIVA automáticamente
+  - El niño vuelve a escuchar el audio general
+
+═══════════════════════════════════════════════════════════════════
+
+FLUJO COMPLETO DE AUDIO
+═══════════════════════════════════════════════════════════════════
+
+1. INICIO DE SESIÓN
+   └─> Dashboard carga
+       └─> Audio general se reproduce automáticamente ✓
+           └─> Botón muestra estado ENCENDIDO (verde)
+
+2. NAVEGACIÓN EN EL DASHBOARD
+   └─> Usuario navega a Logros/Tienda/etc.
+       └─> Audio general CONTINÚA sonando ✓
+
+3. USUARIO ENTRA A TUTORIAL
+   └─> Audio general se PAUSA
+       └─> Audio de tutoriales disponible (manual)
+           └─> Usuario sale del tutorial
+               └─> Audio general se REACTIVA ✓
+
+4. USUARIO ENTRA A TAREA
+   └─> Audio general se PAUSA
+       └─> Audio de ejercicios se reproduce AUTOMÁTICAMENTE
+           └─> Usuario completa la tarea
+               └─> Audio general se REACTIVA ✓
+
+5. USUARIO HACE CLIC EN BOTÓN DE MÚSICA
+   └─> Audio general se APAGA
+       └─> Botón muestra estado APAGADO (morado)
+           └─> Usuario navega por el sistema SIN música
+               └─> Usuario hace clic nuevamente
+                   └─> Audio general se ENCIENDE ✓
+
+6. LOGOUT
+   └─> Todos los audios se DETIENEN
+       └─> Estado se guarda en localStorage
+
+═══════════════════════════════════════════════════════════════════
+
+MANEJO DE POLÍTICAS DEL NAVEGADOR
+═══════════════════════════════════════════════════════════════════
+
+Algunos navegadores bloquean la reproducción automática de audio.
+
+SOLUCIÓN IMPLEMENTADA:
+1. Intento de reproducción automática al cargar
+2. Si falla, se intenta en el PRIMER CLIC del usuario
+3. El botón siempre muestra el estado correcto
+4. Mensaje en consola si hay bloqueo
+
+NAVEGADORES COMPATIBLES:
+✓ Chrome/Edge: Puede requerir primer clic
+✓ Firefox: Generalmente permite autoplay
+✓ Safari: Puede requerir primer clic
+
+═══════════════════════════════════════════════════════════════════
+
+MÉTODOS DEL SERVICIO
+═══════════════════════════════════════════════════════════════════
+
+play(type)
+  - Reproduce un audio específico
+  - Detiene cualquier otro audio activo
+  - Guarda el estado
+
+pause(type)
+  - Pausa un audio específico
+  - Guarda el estado
+
+pauseAndReturnToGeneral(type)
+  - Pausa el audio especificado
+  - Si NO es el audio general, reactiva el audio general
+  - Usado al salir de tutoriales/tareas/prácticas
+
+toggle(type)
+  - Alterna entre reproducir/pausar
+  - Usado por el botón del dashboard
+
+isPlaying(type)
+  - Verifica si un audio está sonando
+  - Usado para actualizar el UI
+
+getCurrentAudioType()
+  - Retorna el tipo de audio actualmente sonando
+  - null si no hay audio activo
+
+═══════════════════════════════════════════════════════════════════
+
+ESTADOS VISUALES DEL BOTÓN
+═══════════════════════════════════════════════════════════════════
+
+ENCENDIDO (Música sonando):
+  - Color: Verde (gradiente #10b981 a #059669)
+  - Ícono: fa-volume-up
+  - Animación: Pulse (latido)
+  - Tooltip: "Apagar música"
+
+APAGADO (Música silenciada):
+  - Color: Morado (gradiente #667eea a #764ba2)
+  - Ícono: fa-volume-mute
+  - Sin animación
+  - Tooltip: "Encender música"
+
+HOVER (Cualquier estado):
+  - Escala: 1.1x
+  - Sombra más pronunciada
+  - Gradiente invertido
+
+═══════════════════════════════════════════════════════════════════
+
+VENTAJAS DEL NUEVO COMPORTAMIENTO
+═══════════════════════════════════════════════════════════════════
+
+✓ Experiencia más inmersiva desde el inicio
+✓ No requiere que el niño active la música manualmente
+✓ Transiciones suaves entre secciones
+✓ Audio general siempre presente (a menos que se desactive)
+✓ Contexto musical apropiado para cada actividad
+✓ Control total del usuario con un solo botón
+✓ Estado persistente entre sesiones
+
+═══════════════════════════════════════════════════════════════════
+
+TESTING
+═══════════════════════════════════════════════════════════════════
+
+CASO 1: Primera visita
+  1. Login como niño
+  2. Verificar: Audio general suena automáticamente
+  3. Verificar: Botón muestra estado ENCENDIDO (verde)
+
+CASO 2: Navegación
+  1. Ir a Logros
+  2. Verificar: Audio general continúa
+  3. Ir a Tienda
+  4. Verificar: Audio general continúa
+
+CASO 3: Tutorial
+  1. Ir a Tutorial
+  2. Activar audio de tutoriales
+  3. Verificar: Audio de tutoriales suena
+  4. Salir del tutorial
+  5. Verificar: Audio general se reactiva
+
+CASO 4: Tarea
+  1. Entrar a una tarea
+  2. Verificar: Audio de ejercicios suena automáticamente
+  3. Completar tarea
+  4. Verificar: Audio general se reactiva
+
+CASO 5: Control manual
+  1. Hacer clic en botón de música
+  2. Verificar: Audio se apaga
+  3. Verificar: Botón muestra estado APAGADO (morado)
+  4. Hacer clic nuevamente
+  5. Verificar: Audio se enciende
+
+═══════════════════════════════════════════════════════════════════
+
+SISTEMA COMPLETAMENTE FUNCIONAL ✓
+Audio General Encendido por Defecto ✓
+Retorno Automático al Audio General ✓

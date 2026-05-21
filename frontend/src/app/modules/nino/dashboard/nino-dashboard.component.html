@@ -1,4 +1,15 @@
-<div class="container-fluid py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh">
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; position: relative;">
+
+  <!-- Botón de Música Flotante - SIEMPRE VISIBLE -->
+  <div class="music-button-container">
+    <button class="btn btn-music" 
+            type="button"
+            (click)="toggleMusic()"
+            [class.active]="isMusicPlaying"
+            [attr.aria-label]="isMusicPlaying ? 'Apagar música' : 'Encender música'">
+      <i class="fas" [ngClass]="isMusicPlaying ? 'fa-volume-up' : 'fa-volume-mute'"></i>
+    </button>
+  </div>
 
   <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-white"></div></div>
 
@@ -40,6 +51,7 @@
           </div>
 
           <div class="d-grid gap-2">
+            <a routerLink="/nino/tutorial" class="btn btn-primary fw-bold"><i class="fas fa-graduation-cap me-2"></i>Tutorial</a>
             <a routerLink="/nino/tienda"   class="btn btn-warning fw-bold"><i class="fas fa-store me-2"></i>Tienda</a>
             <a routerLink="/nino/logros"   class="btn btn-success fw-bold"><i class="fas fa-trophy me-2"></i>Mis Logros</a>
             <a routerLink="/nino/practica" class="btn btn-info fw-bold text-white"><i class="fas fa-dumbbell me-2"></i>Practicar</a>
@@ -115,3 +127,55 @@
 
   </div>
 </div>
+
+<style>
+.music-button-container {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.btn-music {
+  pointer-events: all;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 3px solid white;
+  color: white;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.btn-music:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.btn-music:active {
+  transform: scale(0.95);
+}
+
+.btn-music.active {
+  animation: pulse 2s infinite;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(16, 185, 129, 0.8);
+  }
+}
+</style>

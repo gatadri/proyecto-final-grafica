@@ -1,0 +1,275 @@
+CORRECCIONES FINALES - IMÁGENES Y PRECIO
+=========================================
+
+FECHA: 2024
+ESTADO: ✓ COMPLETADO
+
+═══════════════════════════════════════════════════════════════════
+
+1. CAMPO DE PRECIO EN FORMULARIO
+═══════════════════════════════════════════════════════════════════
+
+ESTADO: ✓ YA ESTABA IMPLEMENTADO
+
+El formulario de inventario YA incluye el campo de precio:
+- Ubicación: Col-md-3 en el formulario
+- Tipo: number
+- Validación: min="0"
+- FormControl: 'precio'
+
+El profesor puede:
+✓ Establecer precio al crear
+✓ Modificar precio al editar
+✓ Ver precio en la tabla de inventario
+
+═══════════════════════════════════════════════════════════════════
+
+2. PROBLEMA: IMÁGENES NO CARGAN EN INTERFAZ DEL NIÑO
+═══════════════════════════════════════════════════════════════════
+
+CAUSAS IDENTIFICADAS:
+1. Rutas incorrectas: /images/ en lugar de /imagenes/
+2. Archivos guardados pero no accesibles desde el frontend
+3. Falta configuración de archivos media en Django
+
+SOLUCIONES IMPLEMENTADAS:
+
+A) BACKEND - Guardado de Archivos:
+✓ Método mejorado para guardar archivos
+✓ Uso de rutas absolutas con settings.MEDIA_ROOT
+✓ Creación automática de directorios si no existen
+✓ Nombres únicos con timestamp
+✓ Solo se guarda el nombre del archivo en BD (no la ruta completa)
+
+B) BACKEND - Configuración Django:
+✓ settings.py:
+  - MEDIA_URL = '/media/'
+  - MEDIA_ROOT = frontend/public/
+  
+✓ urls.py:
+  - Agregado static() para servir archivos media en desarrollo
+  - if settings.DEBUG: urlpatterns += static(...)
+
+C) FRONTEND - Rutas Corregidas:
+✓ Inventario profesor:
+  - /images/avatares/ → /imagenes/avatares/
+  - /images/stickers/ → /imagenes/stickers/
+  - Agregado onerror con fallback
+
+✓ Tienda niño:
+  - Ya usaba /imagenes/ correctamente
+  - Agregado onerror con fallback
+  - Fallback: nino.png para skins, sticker1.png para stickers
+
+D) FRONTEND - Manejo de Errores:
+✓ Atributo onerror en todas las imágenes
+✓ Fallback automático si la imagen no carga
+✓ Mejora en cargarImagenBase64() para PDF
+
+═══════════════════════════════════════════════════════════════════
+
+3. PROBLEMA: NO SE PUEDE DESCARGAR PDF DE STICKERS
+═══════════════════════════════════════════════════════════════════
+
+CAUSA:
+- Error al cargar imagen para convertir a base64
+- Problemas con CORS o rutas incorrectas
+
+SOLUCIÓN:
+✓ Mejorado método cargarImagenBase64():
+  - Mejor manejo de errores
+  - Logs de errores en consola
+  - Validación del contexto del canvas
+  - Mensajes de error más descriptivos
+
+✓ Manejo de errores en descargarSticker():
+  - Try-catch completo
+  - Mensaje al usuario si falla
+  - Estado de carga (generandoPdf)
+
+═══════════════════════════════════════════════════════════════════
+
+4. FLUJO COMPLETO DE SUBIDA Y VISUALIZACIÓN
+═══════════════════════════════════════════════════════════════════
+
+CREAR SKIN/STICKER:
+
+1. Profesor sube imagen:
+   POST /api/inventario/tienda
+   - FormData con archivo
+   - Backend guarda en: frontend/public/imagenes/[avatares|stickers]/
+   - Nombre: [tipo]_[timestamp]_[nombre_original]
+   - BD guarda solo: [tipo]_[timestamp]_[nombre_original]
+
+2. Ejemplo de guardado:
+   Archivo subido: "pirata.jpg"
+   Guardado como: "skin_1234567890_pirata.jpg"
+   Ubicación: frontend/public/imagenes/avatares/skin_1234567890_pirata.jpg
+   En BD: "skin_1234567890_pirata.jpg"
+
+3. Visualización en inventario:
+   Ruta: /imagenes/avatares/skin_1234567890_pirata.jpg
+   Fallback: /imagenes/avatares/nino.png
+
+4. Visualización en tienda niño:
+   Ruta: /imagenes/avatares/skin_1234567890_pirata.jpg
+   Fallback: /imagenes/avatares/nino.png
+
+5. Descarga PDF (stickers):
+   - Carga imagen desde: /imagenes/stickers/[nombre]
+   - Convierte a base64
+   - Genera PDF con jsPDF
+   - Descarga automáticamente
+
+═══════════════════════════════════════════════════════════════════
+
+5. ESTRUCTURA DE ARCHIVOS
+═══════════════════════════════════════════════════════════════════
+
+frontend/public/imagenes/
+├── avatares/
+│   ├── nino.png (fallback)
+│   ├── nina.png
+│   ├── astronauta.png
+│   ├── astronauto.png
+│   └── skin_[timestamp]_[nombre].jpg (subidos)
+└── stickers/
+    ├── sticker1.png (fallback)
+    ├── sticker2.png
+    ├── sticker3.png
+    ├── sticker4.png
+    ├── sticker5.png
+    └── sticker_[timestamp]_[nombre].jpg (subidos)
+
+═══════════════════════════════════════════════════════════════════
+
+6. CÓDIGO BACKEND - Guardado de Archivos
+═══════════════════════════════════════════════════════════════════
+
+```python
+if imagen_file:
+    import time
+    file_name = f"skin_{int(time.time())}_{imagen_file.name}"
+    file_path = os.path.join(settings.MEDIA_ROOT, 'imagenes', 'avatares', file_name)
+    
+    # Asegurar que el directorio existe
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    
+    # Guardar el archivo
+    with open(file_path, 'wb+') as destination:
+        for chunk in imagen_file.chunks():
+            destination.write(chunk)
+    
+    # Guardar solo el nombre en BD
+    imagen_nombre = file_name
+```
+
+═══════════════════════════════════════════════════════════════════
+
+7. CÓDIGO FRONTEND - Fallback de Imágenes
+═══════════════════════════════════════════════════════════════════
+
+```html
+<!-- Skins -->
+<img [src]="'/imagenes/avatares/' + s.imagen"
+     onerror="this.src='/imagenes/avatares/nino.png'">
+
+<!-- Stickers -->
+<img [src]="'/imagenes/stickers/' + s.imagen"
+     onerror="this.src='/imagenes/stickers/sticker1.png'">
+```
+
+═══════════════════════════════════════════════════════════════════
+
+8. ARCHIVOS MODIFICADOS
+═══════════════════════════════════════════════════════════════════
+
+BACKEND:
+✓ tareas/views.py
+  - Método post() de InventarioTiendaView
+  - Guardado mejorado de archivos
+  - Imports actualizados
+
+✓ backend_django/settings.py
+  - MEDIA_URL y MEDIA_ROOT
+
+✓ backend_django/urls.py
+  - Configuración static() para media
+
+FRONTEND:
+✓ profesor/inventario/inventario-profesor.component.html
+  - Rutas corregidas /images/ → /imagenes/
+  - Agregado onerror
+
+✓ nino/tienda/nino-tienda.component.html
+  - Agregado onerror en todas las imágenes
+
+✓ nino/tienda/nino-tienda.component.ts
+  - Mejorado cargarImagenBase64()
+  - Mejor manejo de errores
+
+═══════════════════════════════════════════════════════════════════
+
+9. TESTING
+═══════════════════════════════════════════════════════════════════
+
+CASO 1: Subir nueva skin
+1. Ir a Inventario Tienda
+2. Crear Nuevo Ítem
+3. Tipo: Skin
+4. Nombre: "Robot Espacial"
+5. Precio: 300
+6. Rareza: Legendario
+7. Subir imagen: robot.jpg
+8. Guardar
+9. Verificar: Aparece en tabla con imagen
+10. Verificar: Archivo en frontend/public/imagenes/avatares/
+
+CASO 2: Ver en tienda niño
+1. Login como niño
+2. Ir a Tienda
+3. Verificar: Skin aparece con imagen correcta
+4. Verificar: Precio correcto
+5. Comprar si tiene monedas
+6. Equipar
+7. Verificar: Avatar cambia
+
+CASO 3: Descargar sticker
+1. Comprar sticker
+2. Click en "Descargar PDF"
+3. Verificar: PDF se descarga
+4. Verificar: PDF contiene 4 copias del sticker
+5. Verificar: Listo para imprimir y recortar
+
+═══════════════════════════════════════════════════════════════════
+
+10. SOLUCIÓN DE PROBLEMAS
+═══════════════════════════════════════════════════════════════════
+
+PROBLEMA: Imagen no carga
+SOLUCIÓN: 
+- Verificar que el archivo existe en frontend/public/imagenes/
+- Verificar nombre en BD coincide con archivo
+- Verificar permisos de lectura del archivo
+- Usar fallback automático
+
+PROBLEMA: PDF no se descarga
+SOLUCIÓN:
+- Abrir consola del navegador (F12)
+- Buscar errores de carga de imagen
+- Verificar que la imagen existe
+- Verificar CORS si es necesario
+
+PROBLEMA: Archivo no se guarda
+SOLUCIÓN:
+- Verificar permisos de escritura en frontend/public/
+- Verificar que MEDIA_ROOT está configurado
+- Verificar que el directorio existe
+- Ver logs del backend
+
+═══════════════════════════════════════════════════════════════════
+
+TODAS LAS CORRECCIONES COMPLETADAS ✓
+- Campo de precio: ✓ Funcional
+- Imágenes cargan: ✓ Corregido
+- PDF descarga: ✓ Mejorado

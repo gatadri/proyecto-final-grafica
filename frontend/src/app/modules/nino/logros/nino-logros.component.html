@@ -1,45 +1,204 @@
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold"><i class="fas fa-trophy text-warning me-2"></i>Mis Logros</h4>
-    <a routerLink="/nino/dashboard" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
-  </div>
+<div class="container-fluid py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-11">
+      
+      <!-- Encabezado -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 class="fw-bold mb-1">
+            <i class="fas fa-trophy text-warning me-2"></i>Mis Logros
+          </h3>
+          <p class="text-muted mb-0">Desbloquea logros completando desafíos</p>
+        </div>
+        <a routerLink="/nino/dashboard" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+      </div>
 
-  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
-
-  <div *ngIf="!loading">
-    <div class="mb-3">
-      <span class="badge bg-success fs-6">{{ logrosObtenidos.length }} obtenidos</span>
-      <span class="badge bg-secondary fs-6 ms-2">{{ todoLogros.length - logrosObtenidos.length }} por desbloquear</span>
-    </div>
-
-    <div class="row g-3">
-      <div *ngFor="let l of todoLogros" class="col-md-4 col-6">
-        <div class="card text-center h-100" [class.border-warning]="tieneLogro(l.id)" [class.opacity-50]="!tieneLogro(l.id)">
-          <div class="card-body">
-            <i class="fas fa-{{ l.icono }} fa-3x mb-2"
-               [class.text-warning]="l.tipo==='oro'    && tieneLogro(l.id)"
-               [class.text-secondary]="l.tipo==='plata' && tieneLogro(l.id)"
-               [class.text-danger]="l.tipo==='bronce'  && tieneLogro(l.id)"
-               [class.text-muted]="!tieneLogro(l.id)"></i>
-            <h6 class="fw-bold">{{ l.nombre }}</h6>
-            <small class="text-muted">{{ l.descripcion }}</small>
-            <div class="mt-2">
-              <span *ngIf="tieneLogro(l.id)" class="badge"
-                [class.bg-warning]="l.tipo==='oro'"
-                [class.bg-secondary]="l.tipo==='plata'"
-                [class.bg-danger]="l.tipo==='bronce'">
-                {{ l.tipo | titlecase }}
-              </span>
-              <span *ngIf="!tieneLogro(l.id)" class="badge bg-light text-dark">
-                <i class="fas fa-lock me-1"></i>Bloqueado
-              </span>
-            </div>
-            <small *ngIf="tieneLogro(l.id)" class="text-muted d-block mt-1">
-              <i class="fas fa-calendar me-1"></i>{{ getFechaLogro(l.id) }}
-            </small>
-          </div>
+      <!-- Loading -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Cargando...</span>
         </div>
       </div>
+
+      <!-- Contenido -->
+      <div *ngIf="!loading">
+        
+        <!-- Estadísticas -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <h4 class="fw-bold mb-0">{{ logrosObtenidos.length }}</h4>
+                <small class="text-muted">Desbloqueados</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-lock fa-2x text-secondary mb-2"></i>
+                <h4 class="fw-bold mb-0">{{ logrosNoObtenidos.length }}</h4>
+                <small class="text-muted">Bloqueados</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-percentage fa-2x text-primary mb-2"></i>
+                <h4 class="fw-bold mb-0">{{ logros.length > 0 ? ((logrosObtenidos.length / logros.length) * 100).toFixed(0) : 0 }}%</h4>
+                <small class="text-muted">Completado</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body text-center">
+                <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                <h4 class="fw-bold mb-0">{{ nino?.monedas || 0 }}</h4>
+                <small class="text-muted">Monedas</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Logros por Rareza -->
+        <div class="mb-4" *ngFor="let rareza of rarezas">
+          <div class="d-flex align-items-center mb-3">
+            <i class="fas fa-{{ getRarezaIcon(rareza) }} fa-2x me-3" [style.color]="getRarezaColor(rareza)"></i>
+            <div>
+              <h5 class="mb-0 fw-bold text-capitalize">{{ rareza }}</h5>
+              <small class="text-muted">
+                {{ getLogrosDesbloqueadosPorRareza(rareza) }} / {{ getTotalLogrosPorRareza(rareza) }} desbloqueados
+              </small>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div *ngFor="let logro of logrosPorRareza[rareza]" class="col-lg-3 col-md-4 col-sm-6">
+              <div class="card h-100 logro-card" 
+                   [class.logro-desbloqueado]="logro.desbloqueado"
+                   [class.logro-bloqueado]="!logro.desbloqueado">
+                <div class="card-body">
+                  
+                  <!-- Icono y Badge -->
+                  <div class="text-center mb-3 position-relative">
+                    <div class="logro-icon-wrapper" [style.border-color]="getRarezaColor(rareza)">
+                      <i class="fas fa-{{ logro.icono }} fa-3x" 
+                         [style.color]="logro.desbloqueado ? getRarezaColor(rareza) : '#dee2e6'"></i>
+                    </div>
+                    <span class="badge position-absolute top-0 end-0" 
+                          [style.background-color]="getRarezaColor(rareza)"
+                          *ngIf="logro.desbloqueado">
+                      <i class="fas fa-check"></i>
+                    </span>
+                    <span class="badge bg-secondary position-absolute top-0 end-0" 
+                          *ngIf="!logro.desbloqueado">
+                      <i class="fas fa-lock"></i>
+                    </span>
+                  </div>
+
+                  <!-- Información -->
+                  <h6 class="fw-bold text-center mb-2" 
+                      [class.text-muted]="!logro.desbloqueado">
+                    {{ logro.nombre }}
+                  </h6>
+                  <p class="text-muted small text-center mb-3">
+                    {{ logro.descripcion }}
+                  </p>
+
+                  <!-- Barra de Progreso -->
+                  <div class="mb-2" *ngIf="!logro.desbloqueado">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <small class="text-muted">Progreso</small>
+                      <small class="fw-bold" [style.color]="getRarezaColor(rareza)">
+                        {{ logro.progreso_actual }} / {{ logro.valor_requerido }}
+                      </small>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar" 
+                           [style.width.%]="logro.porcentaje"
+                           [style.background-color]="getRarezaColor(rareza)"
+                           role="progressbar"></div>
+                    </div>
+                  </div>
+
+                  <!-- Recompensa -->
+                  <div class="text-center mt-3 pt-3 border-top">
+                    <span class="badge bg-warning text-dark">
+                      <i class="fas fa-coins me-1"></i>+{{ logro.puntos_bonus }} monedas
+                    </span>
+                  </div>
+
+                  <!-- Fecha de desbloqueo -->
+                  <div class="text-center mt-2" *ngIf="logro.desbloqueado && logro.fecha_desbloqueado">
+                    <small class="text-muted">
+                      <i class="fas fa-calendar me-1"></i>
+                      {{ logro.fecha_desbloqueado | date:'dd/MM/yyyy HH:mm' }}
+                    </small>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje si no hay logros -->
+        <div *ngIf="logros.length === 0" class="text-center py-5">
+          <i class="fas fa-trophy fa-4x text-muted mb-3"></i>
+          <h5 class="text-muted">No hay logros disponibles</h5>
+          <p class="text-muted">Los logros aparecerán aquí cuando estén configurados</p>
+        </div>
+
+      </div>
+
     </div>
   </div>
 </div>
+
+<style>
+.logro-card {
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.logro-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.logro-desbloqueado {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.logro-bloqueado {
+  opacity: 0.7;
+  background: #f8f9fa;
+}
+
+.logro-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.progress {
+  border-radius: 10px;
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  border-radius: 10px;
+  transition: width 0.6s ease;
+}
+</style>

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MockDataService } from '../../../core/services/mock-data.service';
+import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -27,7 +27,6 @@ import { AuthService } from '../../../core/services/auth.service';
             <div class="progress" style="height:6px">
               <div class="progress-bar bg-success" [style.width.%]="e.experiencia % 100"></div>
             </div>
-            <small class="text-muted">{{ getTareasCompletadas(e.id) }} tareas completadas · {{ getLogros(e.id) }} logros</small>
           </div>
         </div>
       </div>
@@ -40,17 +39,27 @@ import { AuthService } from '../../../core/services/auth.service';
 export class EstudiantesComponent implements OnInit {
   estudiantes: any[] = [];
   loading = true;
-  constructor(private mock: MockDataService, private auth: AuthService) {}
+  
+  constructor(
+    private api: ApiService, 
+    private auth: AuthService
+  ) {}
+  
   ngOnInit(): void {
-    const user = this.auth.getUser();
-    const profId = Number(user?.id ?? 2);
-    this.estudiantes = this.mock.getNinosByProfesor(profId);
-    this.loading = false;
+    this.cargarEstudiantes();
   }
-  getTareasCompletadas(ninoId: number): number {
-    return this.mock.getProgresoNino(ninoId).filter((p: any) => p.completada).length;
-  }
-  getLogros(ninoId: number): number {
-    return this.mock.getLogrosNino(ninoId).length;
+  
+  cargarEstudiantes(): void {
+    this.api.get<any[]>('profesor/estudiantes').subscribe({
+      next: (data) => {
+        this.estudiantes = data;
+        this.loading = false;
+        console.log('Estudiantes cargados:', data);
+      },
+      error: (err) => {
+        console.error('Error cargando estudiantes:', err);
+        this.loading = false;
+      }
+    });
   }
 }

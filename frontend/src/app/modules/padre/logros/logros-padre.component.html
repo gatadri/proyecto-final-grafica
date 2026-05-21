@@ -1,0 +1,66 @@
+<div class="container-fluid py-4">
+  <h5 class="fw-bold mb-4">
+    <i class="fas fa-trophy text-warning me-2"></i>Logros de mis Hijos
+  </h5>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!loading">
+    <div *ngFor="let hijo of hijosConLogros" class="mb-4">
+      <div class="card">
+        <div class="card-header bg-white">
+          <h6 class="fw-bold mb-0">
+            <i class="fas fa-child text-primary me-2"></i>
+            {{ hijo.nombre }} {{ hijo.apellido }}
+            <span class="badge bg-success ms-2">{{ hijo.logrosObtenidos }} logros</span>
+          </h6>
+        </div>
+        <div class="card-body">
+          <div *ngIf="hijo.logros.length === 0" class="text-center py-3 text-muted">
+            <i class="fas fa-trophy fa-2x mb-2"></i>
+            <p class="mb-0">Aún no hay logros disponibles</p>
+          </div>
+
+          <div *ngIf="hijo.logros.length > 0" class="row g-3">
+            <div *ngFor="let logro of hijo.logros" class="col-md-3 col-sm-4 col-6">
+              <div class="card text-center h-100" 
+                   [class.border-success]="logro.desbloqueado"
+                   [class.opacity-50]="!logro.desbloqueado">
+                <div class="card-body p-2">
+                  <i class="fas fa-{{ logro.icono }} fa-2x mb-2"
+                     [class.text-warning]="logro.rareza==='oro' && logro.desbloqueado"
+                     [class.text-secondary]="logro.rareza==='plata' && logro.desbloqueado"
+                     [class.text-danger]="logro.rareza==='bronce' && logro.desbloqueado"
+                     [class.text-muted]="!logro.desbloqueado"></i>
+                  <h6 class="fw-bold small mb-1">{{ logro.nombre }}</h6>
+                  <small class="text-muted d-block mb-2">{{ logro.descripcion }}</small>
+                  
+                  <span *ngIf="logro.desbloqueado" class="badge"
+                    [class.bg-warning]="logro.rareza==='oro'"
+                    [class.bg-secondary]="logro.rareza==='plata'"
+                    [class.bg-danger]="logro.rareza==='bronce'">
+                    <i class="fas fa-check me-1"></i>{{ logro.rareza | titlecase }}
+                  </span>
+                  <span *ngIf="!logro.desbloqueado" class="badge bg-light text-dark">
+                    <i class="fas fa-lock me-1"></i>Bloqueado
+                  </span>
+                  
+                  <small *ngIf="logro.desbloqueado && logro.fecha_desbloqueado" class="text-muted d-block mt-1">
+                    {{ logro.fecha_desbloqueado | date:'dd/MM/yyyy' }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="hijosConLogros.length === 0" class="text-center py-5 text-muted">
+      <i class="fas fa-child fa-4x mb-3"></i>
+      <p>No tienes hijos registrados</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,259 @@
+<div class="container-fluid py-4 tutorial-container">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      
+      <!-- Confeti de celebración -->
+      <div class="confetti-container" *ngIf="mostrarConfeti">
+        <div class="confetti" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]"></div>
+      </div>
+      
+      <!-- Encabezado -->
+      <div class="text-center mb-4" @fadeIn>
+        <h3 class="fw-bold text-primary">
+          <i class="fas fa-graduation-cap me-2"></i>Tutorial del Sistema
+        </h3>
+        <p class="text-muted">Aprende a usar todas las funciones paso a paso</p>
+        
+        <!-- Botón de Audio -->
+        <button class="btn btn-sm" 
+                [class.btn-primary]="isAudioPlaying"
+                [class.btn-outline-secondary]="!isAudioPlaying"
+                (click)="toggleAudioTutorial()">
+          <i class="fas" [class.fa-volume-up]="isAudioPlaying" [class.fa-volume-mute]="!isAudioPlaying"></i>
+          {{ isAudioPlaying ? 'Pausar música' : 'Reproducir música' }}
+        </button>
+      </div>
+
+      <!-- Barra de progreso -->
+      <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <small class="text-muted">Progreso del tutorial</small>
+            <small class="fw-bold text-primary">{{ pasoActual + 1 }} / {{ tutoriales.length }}</small>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-primary" 
+                 [style.width.%]="progreso"
+                 role="progressbar"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contenido del tutorial -->
+      <div class="card border-0 shadow-lg tutorial-card" @slideIn>
+        <div class="card-body p-5">
+          
+          <!-- Icono y título -->
+          <div class="text-center mb-4">
+            <div class="mb-3 icon-container" [@bounce]="animacionEstado">
+              <i class="fas fa-{{ tutorialActual.icono }} fa-4x" 
+                 [style.color]="tutorialActual.color || '#6366f1'"></i>
+            </div>
+            <h4 class="fw-bold">{{ tutorialActual.titulo }}</h4>
+            <p class="text-muted">{{ tutorialActual.descripcion }}</p>
+          </div>
+
+          <!-- Demo visual interactiva -->
+          <div class="demo-container mb-4" *ngIf="tutorialActual.demo" @fadeIn>
+            
+            <!-- Demo Dashboard -->
+            <div class="demo-dashboard" *ngIf="tutorialActual.demo === 'dashboard'">
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <div class="stat-card animate-pulse">
+                    <i class="fas fa-coins text-warning fa-2x mb-2"></i>
+                    <h5 class="mb-0">250</h5>
+                    <small>Monedas</small>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-card animate-pulse" style="animation-delay: 0.1s">
+                    <i class="fas fa-star text-primary fa-2x mb-2"></i>
+                    <h5 class="mb-0">Nivel 5</h5>
+                    <small>Experiencia</small>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-card animate-pulse" style="animation-delay: 0.2s">
+                    <i class="fas fa-fire text-danger fa-2x mb-2"></i>
+                    <h5 class="mb-0">7 días</h5>
+                    <small>Racha</small>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="stat-card animate-pulse" style="animation-delay: 0.3s">
+                    <i class="fas fa-tasks text-success fa-2x mb-2"></i>
+                    <h5 class="mb-0">3</h5>
+                    <small>Pendientes</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo Tareas -->
+            <div class="demo-tareas" *ngIf="tutorialActual.demo === 'tareas'">
+              <div class="tarea-item animate-slide-in" *ngFor="let i of [1,2,3]; let idx = index" [style.animation-delay]="idx * 0.1 + 's'">
+                <div class="d-flex align-items-center">
+                  <div class="tarea-icon me-3">
+                    <i class="fas fa-book-open"></i>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">Tarea de Matemáticas {{ i }}</h6>
+                    <small class="text-muted">5 ejercicios • 50 monedas</small>
+                  </div>
+                  <button class="btn btn-sm btn-primary">Iniciar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo Práctica -->
+            <div class="demo-practica" *ngIf="tutorialActual.demo === 'practica'">
+              <div class="row g-3">
+                <div class="col-md-6" *ngFor="let tipo of ['Opción Múltiple', 'Completar', 'Verdadero/Falso', 'Práctica Libre']; let idx = index">
+                  <div class="practica-card animate-scale" [style.animation-delay]="idx * 0.1 + 's'">
+                    <i class="fas fa-{{ idx === 0 ? 'list-ul' : idx === 1 ? 'pen' : idx === 2 ? 'check-circle' : 'random' }} fa-2x mb-2"></i>
+                    <h6>{{ tipo }}</h6>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo Tienda -->
+            <div class="demo-tienda" *ngIf="tutorialActual.demo === 'tienda'">
+              <div class="row g-3">
+                <div class="col-md-4" *ngFor="let item of [1,2,3]; let idx = index">
+                  <div class="tienda-item animate-float" [style.animation-delay]="idx * 0.15 + 's'">
+                    <div class="item-badge">{{ idx === 0 ? 'Común' : idx === 1 ? 'Raro' : 'Legendario' }}</div>
+                    <i class="fas fa-user-circle fa-3x mb-2" [class.text-success]="idx === 0" [class.text-info]="idx === 1" [class.text-warning]="idx === 2"></i>
+                    <h6>Skin {{ idx + 1 }}</h6>
+                    <div class="price">
+                      <i class="fas fa-coins text-warning"></i> {{ (idx + 1) * 100 }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo Logros -->
+            <div class="demo-logros" *ngIf="tutorialActual.demo === 'logros'">
+              <div class="row g-3">
+                <div class="col-md-6" *ngFor="let logro of ['Primera Tarea', 'Racha 7 días', 'Nivel 10', 'Coleccionista']; let idx = index">
+                  <div class="logro-card animate-flip" [style.animation-delay]="idx * 0.1 + 's'" [class.desbloqueado]="idx < 2">
+                    <i class="fas fa-trophy fa-2x mb-2"></i>
+                    <h6>{{ logro }}</h6>
+                    <span class="badge" [class.bg-success]="idx < 2" [class.bg-secondary]="idx >= 2">
+                      {{ idx < 2 ? 'Desbloqueado' : 'Bloqueado' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Demo Bienvenida -->
+            <div class="demo-bienvenida text-center" *ngIf="tutorialActual.demo === 'bienvenida'">
+              <div class="welcome-animation">
+                <i class="fas fa-rocket fa-4x text-primary animate-bounce-slow"></i>
+                <h4 class="mt-3 animate-fade-in">¡Comencemos tu aventura de aprendizaje!</h4>
+              </div>
+            </div>
+
+            <!-- Demo Consejos -->
+            <div class="demo-consejos" *ngIf="tutorialActual.demo === 'consejos'">
+              <div class="consejos-grid">
+                <div class="consejo-item animate-slide-up" *ngFor="let i of [1,2,3,4]; let idx = index" [style.animation-delay]="idx * 0.1 + 's'">
+                  <i class="fas fa-{{ idx === 0 ? 'calendar-check' : idx === 1 ? 'dumbbell' : idx === 2 ? 'piggy-bank' : 'medal' }} fa-2x mb-2"></i>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Pasos -->
+          <div class="mt-4">
+            <ul class="list-unstyled">
+              <li *ngFor="let paso of tutorialActual.pasos; let i = index" 
+                  class="mb-3 d-flex align-items-start paso-item"
+                  [style.animation-delay]="i * 0.1 + 's'"
+                  @fadeIn>
+                <div class="me-3">
+                  <span class="badge rounded-circle paso-badge" 
+                        [style.background-color]="tutorialActual.color || '#6366f1'">
+                    {{ i + 1 }}
+                  </span>
+                </div>
+                <div class="flex-grow-1">
+                  <p class="mb-0 paso-texto">{{ paso }}</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Navegación -->
+          <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
+            <button 
+              class="btn btn-outline-primary"
+              [disabled]="pasoActual === 0"
+              (click)="anterior()">
+              <i class="fas fa-arrow-left me-2"></i>Anterior
+            </button>
+
+            <div class="d-flex gap-2">
+              <button 
+                *ngFor="let tutorial of tutoriales; let i = index"
+                class="btn btn-sm rounded-circle"
+                [class.btn-primary]="i === pasoActual"
+                [class.btn-outline-secondary]="i !== pasoActual"
+                (click)="irAPaso(i)"
+                style="width: 12px; height: 12px; padding: 0;">
+              </button>
+            </div>
+
+            <button 
+              class="btn btn-primary"
+              [disabled]="pasoActual === tutoriales.length - 1"
+              (click)="siguiente()">
+              Siguiente<i class="fas fa-arrow-right ms-2"></i>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Indicadores de sección -->
+      <div class="row g-3 mt-4">
+        <div class="col-md-4" *ngFor="let tutorial of tutoriales.slice(1, 7); let i = index">
+          <div class="card h-100 border-0 shadow-sm section-card" 
+               [class.active]="pasoActual === i + 1"
+               [class.completed]="pasoActual > i + 1"
+               style="cursor: pointer;"
+               (click)="irAPaso(i + 1)"
+               @fadeIn>
+            <div class="card-body text-center">
+              <div class="section-icon-wrapper">
+                <i class="fas fa-{{ tutorial.icono }} fa-2x mb-2"
+                   [style.color]="pasoActual === i + 1 ? tutorial.color : '#9ca3af'"></i>
+                <i class="fas fa-check-circle check-icon" *ngIf="pasoActual > i + 1"></i>
+              </div>
+              <h6 class="mb-0" 
+                  [class.fw-bold]="pasoActual === i + 1">
+                {{ tutorial.titulo }}
+              </h6>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje final -->
+      <div class="alert alert-success border-0 shadow-sm mt-4 final-message" *ngIf="pasoActual === tutoriales.length - 1" @fadeIn>
+        <div class="d-flex align-items-center">
+          <i class="fas fa-check-circle fa-3x me-3 animate-bounce-slow"></i>
+          <div>
+            <h5 class="mb-1 fw-bold">¡Has completado el tutorial!</h5>
+            <p class="mb-0">Ahora estás listo para usar el sistema. ¡Mucha suerte! 🎉</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import { AvatarStateService } from '../../../core/services/avatar-state.service';
+import { AudioService, AudioType } from '../../../core/services/audio.service';
 
 @Component({ selector: 'app-nino-tarea', standalone: true, imports: [CommonModule, RouterModule], templateUrl: './nino-tarea.component.html' })
-export class NinoTareaComponent implements OnInit {
+export class NinoTareaComponent implements OnInit, OnDestroy {
   nino: any;
   tarea: any;
   ejercicios: any[] = [];
@@ -24,13 +25,22 @@ export class NinoTareaComponent implements OnInit {
   ejercicioInicio = 0;
   logrosDesbloqueados: any[] = [];
 
-  constructor(private route: ActivatedRoute, private router: Router,
-              private auth: AuthService,
-              private api: ApiService, private avatarState: AvatarStateService) {}
+  constructor(
+    private route: ActivatedRoute, 
+    private router: Router,
+    private auth: AuthService,
+    private api: ApiService, 
+    private avatarState: AvatarStateService,
+    private audioService: AudioService
+  ) {}
 
   ngOnInit(): void {
     this.avatarState.resetExpression();
     this.nino = this.auth.getNino();
+    
+    // Reproducir audio de ejercicios automáticamente
+    this.audioService.play(AudioType.EJERCICIOS);
+    
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.api.get<any>(`nino/tareas/${id}?nino_id=${this.nino.id}`).subscribe({
       next: tarea => {
@@ -45,6 +55,11 @@ export class NinoTareaComponent implements OnInit {
         this.router.navigate(['/nino/dashboard']);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    // Pausar audio de ejercicios y volver al general
+    this.audioService.pauseAndReturnToGeneral(AudioType.EJERCICIOS);
   }
 
   get ejercicio(): any { return this.ejercicios[this.ejercicioActual]; }

@@ -3,37 +3,84 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Nino } from '../../../core/models';
+import { forkJoin } from 'rxjs';
+
+interface Logro {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  icono: string;
+  rareza: string;
+  desbloqueado: boolean;
+  fecha_desbloqueado?: string;
+}
+
+interface HijoConLogros {
+  id: number;
+  nombre: string;
+  apellido: string;
+  logros: Logro[];
+  logrosObtenidos: number;
+}
 
 @Component({
   selector: 'app-logros-padre',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <h5 class="fw-bold mb-4"><i class="fas fa-trophy text-warning me-2"></i>Logros de mis Hijos</h5>
-    <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
-    <div *ngIf="!loading">
-      <div *ngFor="let hijo of hijos" class="mb-4">
-        <h6 class="fw-bold border-bottom pb-2"><i class="fas fa-child text-primary me-2"></i>{{ hijo.nombre }} {{ hijo.apellido }}</h6>
-        <div class="row g-2">
-          <div class="col-12 text-muted small">Próximamente: Sistema de logros</div>
-        </div>
-      </div>
-    </div>
-  `
+  templateUrl: './logros-padre.component.html'
 })
 export class LogrosPadreComponent implements OnInit {
-  hijos: Nino[] = [];
+  hijosConLogros: HijoConLogros[] = [];
   loading = true;
-  constructor(private api: ApiService, private auth: AuthService) {}
+
+  constructor(
+    private api: ApiService,
+    private auth: AuthService
+  ) {}
+
   ngOnInit(): void {
     const user = this.auth.getUser();
     if (user) {
-      this.api.get<Nino[]>('usuarios/' + user.id + '/hijos').subscribe({
-        next: data => { this.hijos = data; this.loading = false; },
-        error: () => this.loading = false
-      });
+      this.cargarHijosYLogros(user.id);
     } else {
       this.loading = false;
     }
+  }
+
+  cargarHijosYLogros(padreId: number): void {
+    this.api.get<Nino[]>(`usuarios/${padreId}/hijos`).subscribe({
+      next: hijos => {
+        if (hijos.length === 0) {
+          this.loading = false;
+          return;
+        }
+
+        // Cargar logros de cada hijo
+        const requests = hijos.map(hijo =>
+          this.api.get<Logro[]>(`logros?nino_id=${hijo.id}`)
+        );
+
+        forkJoin(requests).subscribe({
+          next: logrosArray => {
+            this.hijosConLogros = hijos.map((hijo, index) => ({
+              id: hijo.id,
+              nombre: hijo.nombre,
+              apellido: hijo.apellido,
+              logros: logrosArray[index],
+              logrosObtenidos: logrosArray[index].filter(l => l.desbloqueado).length
+            }));
+            this.loading = false;
+          },
+          error: err => {
+            console.error('Error cargando logros', err);
+            this.loading = false;
+          }
+        });
+      },
+      error: err => {
+        console.error('Error cargando hijos', err);
+        this.loading = false;
+      }
+    });
   }
 }

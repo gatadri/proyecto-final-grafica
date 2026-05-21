@@ -25,18 +25,6 @@
           <div class="invalid-feedback">Requerido</div>
         </div>
         <div class="col-md-4">
-          <label class="form-label fw-bold">Categoría</label>
-          <input type="text" formControlName="categoria" class="form-control" placeholder="animales, espacio...">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-bold">Imagen *</label>
-          <input type="text" formControlName="imagen" class="form-control" placeholder="archivo.png">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label fw-bold">Precio</label>
-          <input type="number" formControlName="precio" class="form-control" min="0">
-        </div>
-        <div class="col-md-3">
           <label class="form-label fw-bold">Rareza</label>
           <select formControlName="rareza" class="form-select">
             <option value="comun">Común</option>
@@ -44,13 +32,26 @@
             <option value="legendario">Legendario</option>
           </select>
         </div>
-        <div class="col-md-3" *ngIf="isSticker">
-          <label class="form-label fw-bold">PDF Template</label>
-          <input type="text" formControlName="pdf_template" class="form-control" placeholder="template.pdf">
+        <div class="col-md-3">
+          <label class="form-label fw-bold">Precio</label>
+          <input type="number" formControlName="precio" class="form-control" min="0">
+        </div>
+        <div class="col-md-12">
+          <label class="form-label fw-bold">Imagen * (JPG, PNG)</label>
+          <input type="file" 
+                 class="form-control" 
+                 accept="image/*"
+                 (change)="onFileSelected($event)">
+          <small class="text-muted">Selecciona una imagen para el {{ form.get('tipo')?.value === 'skin' ? 'avatar' : 'sticker' }}</small>
+          
+          <!-- Preview de la imagen -->
+          <div *ngIf="imagePreview" class="mt-2">
+            <img [src]="imagePreview" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+          </div>
         </div>
         <div class="col-md-12">
           <label class="form-label fw-bold">Descripción</label>
-          <input type="text" formControlName="descripcion" class="form-control">
+          <textarea formControlName="descripcion" class="form-control" rows="2"></textarea>
         </div>
       </div>
       <div class="d-flex gap-2 mt-3">
@@ -79,7 +80,7 @@
             <thead class="table-light"><tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Rareza</th><th>Precio</th><th>Estado</th><th>Editar</th></tr></thead>
             <tbody>
               <tr *ngFor="let s of skins">
-                <td><img [src]="'/images/avatares/' + s.imagen" width="40" height="40" class="rounded-circle border"></td>
+                <td><img [src]="'/imagenes/avatares/' + s.imagen" width="40" height="40" class="rounded-circle border" onerror="this.src='/imagenes/avatares/nino.png'"></td>
                 <td><strong>{{ s.nombre }}</strong><br><small class="text-muted">{{ s.descripcion }}</small></td>
                 <td>{{ s.categoria ?? '—' }}</td>
                 <td><span class="badge" [class.bg-secondary]="s.rareza==='comun'" [class.bg-primary]="s.rareza==='raro'" [class.bg-warning]="s.rareza==='legendario'">{{ s.rareza | titlecase }}</span></td>
@@ -97,7 +98,7 @@
             <thead class="table-light"><tr><th>Imagen</th><th>Nombre</th><th>Categoría</th><th>Rareza</th><th>Precio</th><th>Estado</th><th>Editar</th></tr></thead>
             <tbody>
               <tr *ngFor="let s of stickers">
-                <td><img [src]="'/images/stickers/' + s.imagen" width="40" height="40" class="rounded border"></td>
+                <td><img [src]="'/imagenes/stickers/' + s.imagen" width="40" height="40" class="rounded border" onerror="this.src='/imagenes/stickers/sticker1.png'"></td>
                 <td><strong>{{ s.nombre }}</strong><br><small class="text-muted">{{ s.descripcion }}</small></td>
                 <td>{{ s.categoria ?? '—' }}</td>
                 <td><span class="badge" [class.bg-secondary]="s.rareza==='comun'" [class.bg-primary]="s.rareza==='raro'" [class.bg-warning]="s.rareza==='legendario'">{{ s.rareza | titlecase }}</span></td>

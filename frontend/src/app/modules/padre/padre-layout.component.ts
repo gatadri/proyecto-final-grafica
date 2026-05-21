@@ -18,6 +18,7 @@ export class PadreLayoutComponent {
     { label: 'Dashboard',  icon: 'tachometer-alt', route: '/padre/dashboard'  },
     { label: 'Calendario', icon: 'calendar',        route: '/padre/calendario' },
     { label: 'Reportes',   icon: 'chart-line',      route: '/padre/reportes'   },
-    { label: 'Logros',     icon: 'trophy',          route: '/padre/logros'     }
+    { label: 'Logros',     icon: 'trophy',          route: '/padre/logros'     },
+    { label: 'Tutorial',   icon: 'graduation-cap',  route: '/padre/tutorial'   }
   ];
 }

@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { AvatarStateService } from '../../../core/services/avatar-state.service';
+import { AudioService, AudioType } from '../../../core/services/audio.service';
 import { Nino } from '../../../core/models';
 
 @Component({
@@ -13,7 +14,7 @@ import { Nino } from '../../../core/models';
   templateUrl: './nino-practica.component.html',
   styleUrls: ['./nino-practica.component.css']
 })
-export class NinoPracticaComponent implements OnInit {
+export class NinoPracticaComponent implements OnInit, OnDestroy {
   nino!: Nino;
   ejercicios: any[] = [];
   actual = 0;
@@ -32,13 +33,23 @@ export class NinoPracticaComponent implements OnInit {
   constructor(
     private api: ApiService,
     private auth: AuthService,
-    private avatarState: AvatarStateService
+    private avatarState: AvatarStateService,
+    private audioService: AudioService
   ) {}
 
   ngOnInit(): void {
     this.avatarState.resetExpression();
     this.nino = this.auth.getNino()!;
+    
+    // Reproducir audio de ejercicios automáticamente
+    this.audioService.play(AudioType.EJERCICIOS);
+    
     this.cargarEjerciciosAleatorios();
+  }
+
+  ngOnDestroy(): void {
+    // Pausar audio de ejercicios y volver al general
+    this.audioService.pauseAndReturnToGeneral(AudioType.EJERCICIOS);
   }
 
   cargarEjerciciosAleatorios(): void {

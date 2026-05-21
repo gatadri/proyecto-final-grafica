@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tarea, Ejercicio, Nino, EjercicioProgreso, Logro, LogroNino, ProgresoPractica, EjercicioPractica
+from .models import Tarea, Ejercicio, Nino, EjercicioProgreso, Logro, LogroNino, ProgresoPractica, EjercicioPractica, Skin, SkinComprada, Sticker, StickerComprado
 
 
 class NinoSerializer(serializers.ModelSerializer):
@@ -92,3 +92,54 @@ class TareaCreateSerializer(serializers.ModelSerializer):
         if nino_ids is not None:
             instance.ninos.set(Nino.objects.filter(id__in=nino_ids))
         return instance
+
+
+class SkinSerializer(serializers.ModelSerializer):
+    comprada = serializers.SerializerMethodField()
+    equipada = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Skin
+        fields = ['id', 'nombre', 'descripcion', 'imagen', 'avatar_key', 'precio', 'rareza', 'comprada', 'equipada']
+
+    def get_comprada(self, obj):
+        nino_id = self.context.get('nino_id')
+        if nino_id:
+            return SkinComprada.objects.filter(nino_id=nino_id, skin=obj).exists()
+        return False
+
+    def get_equipada(self, obj):
+        nino = self.context.get('nino')
+        if nino:
+            return nino.avatar == obj.avatar_key
+        return False
+
+
+class SkinCompradaSerializer(serializers.ModelSerializer):
+    skin = SkinSerializer(read_only=True)
+
+    class Meta:
+        model = SkinComprada
+        fields = ['id', 'skin', 'fecha_compra']
+
+
+class StickerSerializer(serializers.ModelSerializer):
+    comprado = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Sticker
+        fields = ['id', 'nombre', 'descripcion', 'imagen', 'precio', 'rareza', 'comprado']
+
+    def get_comprado(self, obj):
+        nino_id = self.context.get('nino_id')
+        if nino_id:
+            return StickerComprado.objects.filter(nino_id=nino_id, sticker=obj).exists()
+        return False
+
+
+class StickerCompradoSerializer(serializers.ModelSerializer):
+    sticker = StickerSerializer(read_only=True)
+
+    class Meta:
+        model = StickerComprado
+        fields = ['id', 'sticker', 'fecha_compra']

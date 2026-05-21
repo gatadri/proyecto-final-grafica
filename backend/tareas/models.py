@@ -146,6 +146,8 @@ class Logro(models.Model):
         ('respuestas_rapidas', 'Respuestas Rápidas'),
         ('nivel_alcanzado', 'Nivel Alcanzado'),
         ('monedas_acumuladas', 'Monedas Acumuladas'),
+        ('practicas_completadas', 'Prácticas Completadas'),
+        ('experiencia_total', 'Experiencia Total'),
     ]
 
     nombre            = models.CharField(max_length=100)
@@ -170,3 +172,58 @@ class LogroNino(models.Model):
 
     def __str__(self):
         return f'{self.logro.nombre} - {self.nino.nombre}'
+
+
+class Skin(models.Model):
+    RAREZA_CHOICES = [('comun', 'Común'), ('raro', 'Raro'), ('legendario', 'Legendario')]
+    
+    nombre        = models.CharField(max_length=100)
+    descripcion   = models.TextField()
+    imagen        = models.CharField(max_length=200)  # ruta relativa desde /imagenes/avatares/
+    avatar_key    = models.CharField(max_length=50, unique=True)  # valor que se guarda en nino.avatar
+    precio        = models.IntegerField(default=0)
+    rareza        = models.CharField(max_length=20, choices=RAREZA_CHOICES, default='comun')
+    activo        = models.BooleanField(default=True)
+    created_at    = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre
+
+
+class SkinComprada(models.Model):
+    nino           = models.ForeignKey(Nino, on_delete=models.CASCADE, related_name='skins_compradas')
+    skin           = models.ForeignKey(Skin, on_delete=models.CASCADE)
+    fecha_compra   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('nino', 'skin')
+
+    def __str__(self):
+        return f'{self.nino.nombre} - {self.skin.nombre}'
+
+
+class Sticker(models.Model):
+    RAREZA_CHOICES = [('comun', 'Común'), ('raro', 'Raro'), ('legendario', 'Legendario')]
+    
+    nombre        = models.CharField(max_length=100)
+    descripcion   = models.TextField()
+    imagen        = models.CharField(max_length=200)  # ruta relativa desde /imagenes/stickers/
+    precio        = models.IntegerField(default=0)
+    rareza        = models.CharField(max_length=20, choices=RAREZA_CHOICES, default='comun')
+    activo        = models.BooleanField(default=True)
+    created_at    = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre
+
+
+class StickerComprado(models.Model):
+    nino           = models.ForeignKey(Nino, on_delete=models.CASCADE, related_name='stickers_comprados')
+    sticker        = models.ForeignKey(Sticker, on_delete=models.CASCADE)
+    fecha_compra   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('nino', 'sticker')
+
+    def __str__(self):
+        return f'{self.nino.nombre} - {self.sticker.nombre}'

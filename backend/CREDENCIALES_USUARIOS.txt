@@ -1,0 +1,34 @@
+=== CREDENCIALES DE USUARIOS CORREGIDAS ===
+
+DIRECTOR:
+- Email: director@correo.com
+- Password: (la que ya tenías configurada)
+
+PROFESORES:
+1. Email: profecarlos@correo.com | Password: (la que ya tenías configurada)
+2. Email: ayllon814@correo.com | Password: (la que ya tenías configurada)
+3. Email: carlos@correo.com | Password: 123456798
+4. Email: ana@correo.com | Password: 132465789
+5. Email: luis@correo.com | Password: 123456789
+6. Email: maria@correo.com | Password: 123465789
+
+PADRES:
+1. Email: jose@correo.com | Password: (la que ya tenías configurada)
+2. Email: fabricio@correo.com | Password: (la que ya tenías configurada)
+3. Email: amilcar@correo.com | Password: (la que ya tenías configurada)
+4. Email: carla@correo.com | Password: (la que ya tenías configurada)
+5. Email: juan@correo.com | Password: 123456789
+6. Email: pedro@correo.com | Password: 123456789
+7. Email: lucia@correo.com | Password: 123456789
+8. Email: mario@correo.com | Password: 123456789
+9. Email: sofia@correo.com | Password: 123456789
+10. Email: diego@correo.com | Password: 123456789
+11. Email: elena@correo.com | Password: 123456789
+12. Email: raul@correo.com | Password: 123456789
+13. Email: paola@correo.com | Password: 123456789
+14. Email: andres@correo.com | Password: 123456789
+
+NOTA: Todos los usuarios ahora tienen:
+- Contraseñas correctamente hasheadas
+- Roles en minúsculas (profesor, padre, director)
+- Estado activo habilitado

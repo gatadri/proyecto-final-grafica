@@ -2,28 +2,30 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ApiService } from '../../../core/services/api.service';
+import jsPDF from 'jspdf';
 
-interface SkinItem {
-  id: string;
-  nombre: string;
-  descripcion: string;
-  imagen: string;       // ruta relativa desde /imagenes/avatares/
-  avatarKey: string;    // valor que se guarda en nino.avatar
-  precio: number;
-  rareza: 'comun' | 'raro' | 'legendario';
-}
-
-interface StickerItem {
+interface Skin {
   id: number;
   nombre: string;
   descripcion: string;
-  imagen: string;       // ruta relativa desde /imagenes/stickers/
+  imagen: string;
+  avatar_key: string;
   precio: number;
   rareza: 'comun' | 'raro' | 'legendario';
+  comprada: boolean;
+  equipada: boolean;
 }
 
-const STORAGE_KEY_SKINS    = 'tienda_skins_compradas';
-const STORAGE_KEY_STICKERS = 'tienda_stickers_comprados';
+interface Sticker {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  imagen: string;
+  precio: number;
+  rareza: 'comun' | 'raro' | 'legendario';
+  comprado: boolean;
+}
 
 @Component({
   selector: 'app-nino-tienda',
@@ -37,123 +39,146 @@ export class NinoTiendaComponent implements OnInit {
   mensaje: { tipo: string; texto: string } | null = null;
   generandoPdf = false;
 
-  skins: SkinItem[] = [
-    { id: 'nina',       nombre: 'Niña',       descripcion: 'Avatar de niña',       imagen: 'nina.png',       avatarKey: 'nina1',  precio: 0,  rareza: 'comun'     },
-    { id: 'nino',       nombre: 'Niño',       descripcion: 'Avatar de niño',       imagen: 'nino.png',       avatarKey: 'nino1',  precio: 0,  rareza: 'comun'     },
-    { id: 'astronauta', nombre: 'Astronauta', descripcion: 'Traje espacial (niña)', imagen: 'astronauta.png', avatarKey: 'nina2',  precio: 50, rareza: 'raro'      },
-    { id: 'astronauto', nombre: 'Astronauto', descripcion: 'Traje espacial (niño)', imagen: 'astronauto.png', avatarKey: 'nino2',  precio: 60, rareza: 'legendario' },
-  ];
+  skins: Skin[] = [];
+  stickers: Sticker[] = [];
 
-  stickers: StickerItem[] = [
-    { id: 1, nombre: 'Sticker Estrella',   descripcion: 'Sticker brillante de estrella',   imagen: 'sticker1.png', precio: 10, rareza: 'comun'      },
-    { id: 2, nombre: 'Sticker Cohete',     descripcion: 'Sticker de cohete espacial',       imagen: 'sticker2.png', precio: 15, rareza: 'comun'      },
-    { id: 3, nombre: 'Sticker Arcoíris',   descripcion: 'Sticker de arcoíris mágico',       imagen: 'sticker3.png', precio: 20, rareza: 'raro'       },
-    { id: 4, nombre: 'Sticker Unicornio',  descripcion: 'Sticker de unicornio legendario',  imagen: 'sticker4.png', precio: 25, rareza: 'raro'       },
-    { id: 5, nombre: 'Sticker Galaxia',    descripcion: 'Sticker de galaxia brillante',     imagen: 'sticker5.png', precio: 30, rareza: 'legendario'  },
-  ];
-
-  skinsCompradas:    string[] = [];
-  stickersComprados: number[] = [];
-
-  constructor(private auth: AuthService) {}
+  constructor(
+    private auth: AuthService,
+    private api: ApiService
+  ) {}
 
   ngOnInit(): void {
     this.nino = this.auth.getNino();
-    this.cargarCompras();
-    this.loading = false;
+    this.cargarTienda();
   }
 
-  // ── Monedas unificadas (puede venir de nino.monedas o nino.estadisticas.monedas) ──
+  cargarTienda(): void {
+    this.loading = true;
+    
+    // Cargar skins
+    this.api.get<Skin[]>(`tienda/skins?nino_id=${this.nino.id}`).subscribe({
+      next: skins => {
+        this.skins = skins;
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
+
+    // Cargar stickers
+    this.api.get<Sticker[]>(`tienda/stickers?nino_id=${this.nino.id}`).subscribe({
+      next: stickers => {
+        this.stickers = stickers;
+      },
+      error: () => {}
+    });
+  }
+
   get monedas(): number {
     return this.nino?.monedas ?? this.nino?.estadisticas?.monedas ?? 0;
   }
 
-  private setMonedas(valor: number): void {
+  private actualizarMonedas(valor: number): void {
     if (this.nino.monedas !== undefined) {
       this.nino.monedas = valor;
     } else if (this.nino?.estadisticas) {
       this.nino.estadisticas.monedas = valor;
     }
-    localStorage.setItem('nino', JSON.stringify(this.nino));
+    this.auth.saveNino(this.nino);
   }
 
-  // ── Persistencia de compras en localStorage por niño ──
-  private keyFor(base: string): string {
-    return `${base}_${this.nino?.id ?? 0}`;
-  }
-
-  private cargarCompras(): void {
-    const s  = localStorage.getItem(this.keyFor(STORAGE_KEY_SKINS));
-    const st = localStorage.getItem(this.keyFor(STORAGE_KEY_STICKERS));
-    this.skinsCompradas    = s  ? JSON.parse(s)  : ['nina', 'nino']; // las gratuitas siempre disponibles
-    this.stickersComprados = st ? JSON.parse(st) : [];
-  }
-
-  private guardarCompras(): void {
-    localStorage.setItem(this.keyFor(STORAGE_KEY_SKINS),    JSON.stringify(this.skinsCompradas));
-    localStorage.setItem(this.keyFor(STORAGE_KEY_STICKERS), JSON.stringify(this.stickersComprados));
-  }
-
-  tieneSkin(id: string):    boolean { return this.skinsCompradas.includes(id); }
-  tieneSticker(id: number): boolean { return this.stickersComprados.includes(id); }
-
-  // ── Compra de skin ──
-  comprarSkin(skin: SkinItem): void {
-    if (this.tieneSkin(skin.id)) return;
+  comprarSkin(skin: Skin): void {
+    if (skin.comprada) return;
     if (this.monedas < skin.precio) {
       this.mostrarMensaje('danger', '¡No tienes suficientes monedas! 🪙');
       return;
     }
-    this.setMonedas(this.monedas - skin.precio);
-    this.skinsCompradas.push(skin.id);
-    this.guardarCompras();
-    this.mostrarMensaje('success', `¡Compraste la skin ${skin.nombre}! 🎉`);
+
+    this.api.post('tienda/skins/comprar', {
+      nino_id: this.nino.id,
+      skin_id: skin.id
+    }).subscribe({
+      next: (res: any) => {
+        this.actualizarMonedas(res.monedas);
+        skin.comprada = true;
+        this.mostrarMensaje('success', `¡Compraste la skin ${skin.nombre}! 🎉`);
+      },
+      error: err => {
+        this.mostrarMensaje('danger', err.error?.error || 'Error al comprar skin');
+      }
+    });
   }
 
-  // ── Equipar skin (cambia el avatar activo del niño) ──
-  equiparSkin(skin: SkinItem): void {
-    this.nino.avatar = skin.avatarKey;
-    localStorage.setItem('nino', JSON.stringify(this.nino));
-    this.mostrarMensaje('success', `¡Avatar cambiado a ${skin.nombre}! ✨`);
+  tieneSkin(skinId: number): boolean {
+    const skin = this.skins.find(s => s.id === skinId);
+    return skin ? skin.comprada : false;
   }
 
-  skinEquipada(skin: SkinItem): boolean {
-    return this.nino?.avatar === skin.avatarKey;
+  skinEquipada(skin: Skin): boolean {
+    return skin.equipada;
   }
 
-  // ── Compra de sticker ──
-  comprarSticker(sticker: StickerItem): void {
-    if (this.tieneSticker(sticker.id)) return;
+  equiparSkin(skin: Skin): void {
+    if (!skin.comprada) return;
+
+    this.api.post('tienda/skins/equipar', {
+      nino_id: this.nino.id,
+      skin_id: skin.id
+    }).subscribe({
+      next: (res: any) => {
+        this.nino.avatar = res.avatar;
+        this.auth.saveNino(this.nino);
+        
+        // Actualizar estado de equipada
+        this.skins.forEach(s => s.equipada = false);
+        skin.equipada = true;
+        
+        this.mostrarMensaje('success', `¡Avatar cambiado a ${skin.nombre}! ✨`);
+      },
+      error: err => {
+        this.mostrarMensaje('danger', err.error?.error || 'Error al equipar skin');
+      }
+    });
+  }
+
+  comprarSticker(sticker: Sticker): void {
+    if (sticker.comprado) return;
     if (this.monedas < sticker.precio) {
       this.mostrarMensaje('danger', '¡No tienes suficientes monedas! 🪙');
       return;
     }
-    this.setMonedas(this.monedas - sticker.precio);
-    this.stickersComprados.push(sticker.id);
-    this.guardarCompras();
-    this.mostrarMensaje('success', `¡Compraste ${sticker.nombre}! 🎉`);
+
+    this.api.post('tienda/stickers/comprar', {
+      nino_id: this.nino.id,
+      sticker_id: sticker.id
+    }).subscribe({
+      next: (res: any) => {
+        this.actualizarMonedas(res.monedas);
+        sticker.comprado = true;
+        this.mostrarMensaje('success', `¡Compraste ${sticker.nombre}! 🎉`);
+      },
+      error: err => {
+        this.mostrarMensaje('danger', err.error?.error || 'Error al comprar sticker');
+      }
+    });
   }
 
-  // ── Descarga de sticker en PDF listo para imprimir ──
-  async descargarSticker(sticker: StickerItem): Promise<void> {
+  tieneSticker(stickerId: number): boolean {
+    const sticker = this.stickers.find(s => s.id === stickerId);
+    return sticker ? sticker.comprado : false;
+  }
+
+  async descargarSticker(sticker: Sticker): Promise<void> {
     this.generandoPdf = true;
     try {
-      const { jsPDF } = await import('jspdf');
-
-      // Cargar imagen como base64
       const imgBase64 = await this.cargarImagenBase64(`/imagenes/stickers/${sticker.imagen}`);
 
-      // Hoja A4 en mm: 210 x 297
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
       const pageW = 210;
       const pageH = 297;
 
-      // Fondo degradado simulado con rectángulos
       doc.setFillColor(245, 243, 255);
       doc.rect(0, 0, pageW, pageH, 'F');
 
-      // Borde decorativo
       doc.setDrawColor(124, 58, 237);
       doc.setLineWidth(3);
       doc.roundedRect(8, 8, pageW - 16, pageH - 16, 6, 6, 'S');
@@ -162,40 +187,33 @@ export class NinoTiendaComponent implements OnInit {
       doc.setLineWidth(1);
       doc.roundedRect(12, 12, pageW - 24, pageH - 24, 4, 4, 'S');
 
-      // Título
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(22);
       doc.setTextColor(109, 40, 217);
-      doc.text('🌟 Mi Sticker Especial 🌟', pageW / 2, 32, { align: 'center' });
+      doc.text('Mi Sticker Especial', pageW / 2, 32, { align: 'center' });
 
-      // Nombre del sticker
       doc.setFontSize(16);
       doc.setTextColor(55, 48, 163);
       doc.text(sticker.nombre, pageW / 2, 44, { align: 'center' });
 
-      // Imagen del sticker centrada — 4 copias en cuadrícula para imprimir
-      const stickerSize = 70; // mm
+      const stickerSize = 70;
       const gap = 10;
       const startX = (pageW - (stickerSize * 2 + gap)) / 2;
       const startY = 58;
 
       const posiciones = [
-        { x: startX,                  y: startY },
+        { x: startX, y: startY },
         { x: startX + stickerSize + gap, y: startY },
-        { x: startX,                  y: startY + stickerSize + gap },
+        { x: startX, y: startY + stickerSize + gap },
         { x: startX + stickerSize + gap, y: startY + stickerSize + gap },
       ];
 
       for (const pos of posiciones) {
-        // Sombra del sticker
         doc.setFillColor(200, 190, 240);
         doc.roundedRect(pos.x + 2, pos.y + 2, stickerSize, stickerSize, 8, 8, 'F');
-        // Fondo blanco del sticker
         doc.setFillColor(255, 255, 255);
         doc.roundedRect(pos.x, pos.y, stickerSize, stickerSize, 8, 8, 'F');
-        // Imagen
         doc.addImage(imgBase64, 'PNG', pos.x + 5, pos.y + 5, stickerSize - 10, stickerSize - 10);
-        // Borde punteado (línea de corte)
         doc.setDrawColor(180, 160, 220);
         doc.setLineWidth(0.5);
         doc.setLineDashPattern([2, 2], 0);
@@ -203,20 +221,17 @@ export class NinoTiendaComponent implements OnInit {
         doc.setLineDashPattern([], 0);
       }
 
-      // Instrucción de corte
       doc.setFontSize(10);
       doc.setTextColor(120, 100, 180);
-      doc.text('✂ Recorta por la línea punteada', pageW / 2, startY + stickerSize * 2 + gap + 16, { align: 'center' });
+      doc.text('Recorta por la linea punteada', pageW / 2, startY + stickerSize * 2 + gap + 16, { align: 'center' });
 
-      // Descripción
       doc.setFontSize(11);
       doc.setTextColor(80, 70, 140);
       doc.text(sticker.descripcion, pageW / 2, startY + stickerSize * 2 + gap + 26, { align: 'center' });
 
-      // Pie de página
       doc.setFontSize(9);
       doc.setTextColor(160, 140, 200);
-      doc.text(`Generado para: ${this.nino?.nombre ?? 'Estudiante'} • EduApp`, pageW / 2, pageH - 16, { align: 'center' });
+      doc.text(`Generado para: ${this.nino?.nombre ?? 'Estudiante'} - EduApp`, pageW / 2, pageH - 16, { align: 'center' });
 
       doc.save(`sticker-${sticker.id}-${sticker.nombre.toLowerCase().replace(/\s+/g, '-')}.pdf`);
       this.mostrarMensaje('success', '¡PDF descargado listo para imprimir! 🖨️');
@@ -234,12 +249,21 @@ export class NinoTiendaComponent implements OnInit {
       img.crossOrigin = 'anonymous';
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width  = img.naturalWidth;
+        canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
-        canvas.getContext('2d')!.drawImage(img, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          resolve(canvas.toDataURL('image/png'));
+        } else {
+          reject(new Error('No se pudo obtener el contexto del canvas'));
+        }
       };
-      img.onerror = reject;
+      img.onerror = (error) => {
+        console.error('Error cargando imagen:', url, error);
+        reject(new Error(`No se pudo cargar la imagen: ${url}`));
+      };
+      // Intentar cargar la imagen
       img.src = url;
     });
   }

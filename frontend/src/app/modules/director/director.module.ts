@@ -7,10 +7,10 @@ import { SharedModule } from '../../shared/shared.module';
 import { DirectorLayoutComponent } from './director-layout.component';
 import { DirectorDashboardComponent } from './dashboard/director-dashboard.component';
 import { UsuariosComponent } from './usuarios/usuarios.component';
-import { InventarioDirectorComponent } from './inventario/inventario-director.component';
 import { EstadisticasComponent } from './estadisticas/estadisticas.component';
 import { LogsComponent } from './logs/logs.component';
 import { ReportesComponent } from './reportes/reportes.component';
+import { TutorialDirectorComponent } from './tutorial/tutorial-director.component';
 
 const routes: Routes = [
   {
@@ -19,10 +19,10 @@ const routes: Routes = [
     children: [
       { path: 'dashboard',   component: DirectorDashboardComponent },
       { path: 'usuarios',    component: UsuariosComponent },
-      { path: 'inventario',  component: InventarioDirectorComponent },
       { path: 'estadisticas',component: EstadisticasComponent },
       { path: 'reportes',    component: ReportesComponent },
       { path: 'logs',        component: LogsComponent },
+      { path: 'tutorial',    component: TutorialDirectorComponent },
       { path: '',            redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }
@@ -34,10 +34,10 @@ const routes: Routes = [
     DirectorLayoutComponent,
     DirectorDashboardComponent,
     UsuariosComponent,
-    InventarioDirectorComponent,
     EstadisticasComponent,
     ReportesComponent,
-    LogsComponent
+    LogsComponent,
+    TutorialDirectorComponent
   ]
 })
 export class DirectorModule {}

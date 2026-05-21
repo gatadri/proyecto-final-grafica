@@ -1,0 +1,137 @@
+TROUBLESHOOTING - SISTEMA DE AUDIO
+===================================
+
+PROBLEMA: No se ve el botón de audio o no suena
+
+SOLUCIONES:
+===========
+
+1. VERIFICAR QUE EL BOTÓN ESTÉ VISIBLE
+   - Abrir el dashboard del niño
+   - Buscar un botón circular en la esquina inferior derecha
+   - Color: Morado/azul con gradiente
+   - Debe tener un ícono de música o volumen mudo
+
+2. ABRIR LA CONSOLA DEL NAVEGADOR
+   - Presionar F12
+   - Ir a la pestaña "Console"
+   - Buscar mensajes:
+     * "Audios inicializados correctamente"
+     * "Toggle music clicked" (al hacer clic)
+     * Errores de carga de audio
+
+3. VERIFICAR ARCHIVOS DE AUDIO
+   - Ubicación: frontend/public/audios/
+   - Archivos necesarios:
+     * audio general.mp3
+     * audio tutoriales.mp3
+     * audio ejercicios.mp3
+   - Verificar que existan y tengan contenido
+
+4. VERIFICAR PERMISOS DEL NAVEGADOR
+   - Chrome/Edge: Configuración > Privacidad > Configuración de sitios > Sonido
+   - Asegurarse de que el sitio tenga permiso para reproducir audio
+   - Algunos navegadores bloquean audio automático
+
+5. PROBAR MANUALMENTE
+   - Hacer clic en el botón de música
+   - Debe cambiar de ícono (mute a music)
+   - Debe cambiar de color (morado a verde)
+   - Debe empezar a sonar el audio
+
+6. VERIFICAR VOLUMEN DEL SISTEMA
+   - Volumen del navegador no en mudo
+   - Volumen del sistema operativo activo
+   - Auriculares/altavoces conectados
+
+7. VERIFICAR EN LA CONSOLA
+   Ejecutar en la consola del navegador:
+   ```javascript
+   // Verificar que el servicio existe
+   const audio = new Audio('/audios/audio%20general.mp3');
+   audio.volume = 0.5;
+   audio.play();
+   ```
+   Si suena, el problema es de integración.
+   Si no suena, el problema es del archivo.
+
+8. LIMPIAR CACHÉ
+   - Ctrl + Shift + Delete
+   - Limpiar caché e imágenes
+   - Recargar la página (Ctrl + F5)
+
+9. VERIFICAR RUTAS
+   Las rutas deben ser:
+   - /audios/audio%20general.mp3
+   - /audios/audio%20tutoriales.mp3
+   - /audios/audio%20ejercicios.mp3
+   
+   (Los espacios están codificados como %20)
+
+10. VERIFICAR IMPORTS
+    En el componente debe estar:
+    ```typescript
+    import { AudioService, AudioType } from '../../../core/services/audio.service';
+    
+    constructor(public audioService: AudioService) {}
+    ```
+
+COMPORTAMIENTO ESPERADO:
+========================
+
+DASHBOARD:
+- Botón visible en esquina inferior derecha
+- Al hacer clic: cambia de color y empieza a sonar
+- Audio en loop continuo
+- Volumen al 20%
+
+TUTORIALES:
+- Botón en el encabezado
+- Texto: "Reproducir música" / "Pausar música"
+- Al hacer clic: activa/desactiva audio
+
+TAREAS Y PRÁCTICAS:
+- Audio se reproduce AUTOMÁTICAMENTE al entrar
+- No hay botón de control
+- Se detiene al salir
+
+CÓDIGOS DE ERROR COMUNES:
+=========================
+
+1. "Failed to load resource: net::ERR_FILE_NOT_FOUND"
+   - Los archivos de audio no existen
+   - Verificar carpeta public/audios/
+
+2. "The play() request was interrupted"
+   - El navegador bloqueó la reproducción automática
+   - Requiere interacción del usuario primero
+
+3. "Uncaught (in promise) DOMException: play() failed"
+   - Política de autoplay del navegador
+   - El usuario debe hacer clic primero
+
+4. "Cannot read property 'play' of undefined"
+   - El servicio no se inicializó correctamente
+   - Verificar imports y constructor
+
+PRUEBA RÁPIDA:
+==============
+
+1. Abrir: http://localhost:4200/nino/dashboard
+2. Iniciar sesión como niño
+3. Buscar botón circular morado en esquina inferior derecha
+4. Hacer clic
+5. Debe sonar música de fondo
+
+Si no funciona:
+- Abrir F12 > Console
+- Buscar errores en rojo
+- Copiar el error y buscar en esta guía
+
+CONTACTO:
+=========
+Si el problema persiste, proporcionar:
+- Mensaje de error de la consola
+- Navegador y versión
+- Sistema operativo
+- Captura de pantalla

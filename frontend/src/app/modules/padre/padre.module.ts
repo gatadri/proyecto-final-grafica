@@ -8,6 +8,7 @@ import { PadreDashboardComponent } from './dashboard/padre-dashboard.component';
 import { CalendarioComponent } from './calendario/calendario.component';
 import { LogrosPadreComponent } from './logros/logros-padre.component';
 import { ReportesPadreComponent } from './reportes/reportes-padre.component';
+import { TutorialPadreComponent } from './tutorial/tutorial-padre.component';
 
 const routes: Routes = [
   {
@@ -18,6 +19,7 @@ const routes: Routes = [
       { path: 'calendario', component: CalendarioComponent },
       { path: 'logros',     component: LogrosPadreComponent },
       { path: 'reportes',   component: ReportesPadreComponent },
+      { path: 'tutorial',   component: TutorialPadreComponent },
       { path: '',           redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   }
@@ -26,7 +28,7 @@ const routes: Routes = [
 @NgModule({
   imports: [
     CommonModule, SharedModule, RouterModule.forChild(routes),
-    PadreLayoutComponent, PadreDashboardComponent, CalendarioComponent, LogrosPadreComponent, ReportesPadreComponent
+    PadreLayoutComponent, PadreDashboardComponent, CalendarioComponent, LogrosPadreComponent, ReportesPadreComponent, TutorialPadreComponent
   ]
 })
 export class PadreModule {}

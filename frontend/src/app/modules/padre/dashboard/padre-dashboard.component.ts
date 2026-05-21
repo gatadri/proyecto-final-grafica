@@ -24,6 +24,9 @@ import { Nino } from '../../../core/models';
         <div class="card border-start border-primary border-3">
           <div class="card-body">
             <h5 class="mb-2">{{ h.nombre }} {{ h.apellido }}</h5>
+            <div *ngIf="h.profesor" class="mb-2">
+              <small class="text-muted"><i class="fas fa-chalkboard-teacher me-1"></i>Profesor: <strong>{{ h.profesor.nombre }} {{ h.profesor.apellido }}</strong></small>
+            </div>
             <div class="d-flex gap-2 flex-wrap mb-2">
               <span class="badge bg-warning"><i class="fas fa-coins me-1"></i>{{ h.estadisticas.monedas }}</span>
               <span class="badge bg-info">Nivel {{ h.estadisticas.nivel }}</span>
