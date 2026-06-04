@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-profesor-dashboard',
   standalone: true,
-  imports: [CommonModule, StatCardComponent],
+  imports: [CommonModule],
   templateUrl: './profesor-dashboard.component.html'
 })
 export class ProfesorDashboardComponent implements OnInit {

@@ -1,0 +1,124 @@
+<link rel="stylesheet" href="../nino-pastel-theme.css">
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center"
+     style="background: linear-gradient(135deg, #FFDAB9 0%, #D4E9F7 50%, #B3E0FF 100%); position: relative; overflow: hidden;">
+
+  <!-- Decoraciones Flotantes -->
+  <div class="float-decoration" style="top: 5%; left: 10%; font-size: 2.5rem;">📚</div>
+  <div class="float-decoration" style="top: 15%; right: 8%; font-size: 2rem; animation-delay: 1s;">✏️</div>
+  <div class="float-decoration" style="bottom: 10%; left: 15%; font-size: 2.5rem; animation-delay: 2s;">🎯</div>
+  <div class="float-decoration" style="bottom: 20%; right: 12%; font-size: 2rem; animation-delay: 1.5s;">⭐</div>
+
+  <!-- Pantalla de descanso -->\n  <app-pantalla-descanso></app-pantalla-descanso>
+
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-pastel mb-3"></div>
+    <p class="fw-bold" style="color: var(--pastel-orange-dark);">Cargando tarea...</p>
+  </div>
+
+  <!-- Tarea completada -->
+  <div *ngIf="!loading && completada" class="card-pastel text-center shadow-lg" style="width: 520px; max-width: 90vw;">
+    <div class="card-body p-5">
+      <div class="icon-circle-orange mx-auto mb-4" style="width: 100px; height: 100px; font-size: 3rem;">
+        <i class="fas fa-star"></i>
+      </div>
+      
+      <h3 class="fw-bold title-pastel mb-2" style="font-size: 2rem;">¡Tarea Completada!</h3>
+      <p class="fw-bold mb-4" style="color: #6BB6E0;">{{ tarea.titulo }}</p>
+      
+      <div class="p-4 rounded-pastel mb-4" style="background: var(--gradient-mixed);">
+        <h2 class="text-white fw-bold mb-0" style="font-size: 3rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+          +{{ puntosTotal }}
+        </h2>
+        <small class="text-white fw-bold">puntos ganados 🎉</small>
+      </div>
+
+      <!-- Logros desbloqueados -->
+      <div *ngIf="logrosDesbloqueados.length > 0" class="alert-pastel-success mb-4">
+        <h5 class="fw-bold mb-3">
+          <i class="fas fa-trophy me-2" style="color: #FFB88C;"></i>
+          ¡Nuevos Logros Desbloqueados!
+        </h5>
+        <div *ngFor="let logro of logrosDesbloqueados" class="text-start mb-2">
+          <div class="d-flex align-items-center">
+            <div class="icon-circle-orange me-2" style="width: 35px; height: 35px; font-size: 0.9rem;">
+              <i class="fas fa-check"></i>
+            </div>
+            <div>
+              <strong style="color: #2E7D32;">{{ logro.logro.nombre }}</strong>
+              <br>
+              <small style="color: #558B2F;">{{ logro.logro.descripcion }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <a routerLink="/nino/dashboard" class="btn-pastel-orange text-decoration-none text-white w-100">
+        <i class="fas fa-home me-2"></i>Volver al inicio
+      </a>
+    </div>
+  </div>
+
+  <!-- Ejercicio activo -->
+  <div *ngIf="!loading && !completada && ejercicio" class="card-pastel shadow-lg" style="width: 600px; max-width: 90vw;">
+    <div class="card-body p-4">
+
+      <!-- Progreso -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <span class="badge-pastel-blue">Ejercicio {{ ejercicioActual + 1 }} de {{ ejercicios.length }}</span>
+        <span class="badge-pastel-orange">{{ puntosTotal }} puntos</span>
+      </div>
+      
+      <div class="progress-pastel mb-4">
+        <div class="progress-bar-pastel-orange" [style.width.%]="progreso"></div>
+      </div>
+
+      <!-- Pregunta -->
+      <div class="p-4 rounded-pastel mb-4 text-center" style="background: var(--pastel-cream);">
+        <h5 class="fw-bold mb-0" style="color: #4A90A4; font-size: 1.3rem;">
+          {{ ejercicio.pregunta }}
+        </h5>
+      </div>
+
+      <!-- Opciones -->
+      <div class="d-grid gap-3 mb-4">
+        <button *ngFor="let op of ejercicio.opciones"
+                (click)="respuestaSeleccionada = op"
+                class="btn btn-lg text-start fw-bold hover-lift"
+                [style.background]="respuestaSeleccionada === op ? 'var(--gradient-cool)' : 'white'"
+                [style.color]="respuestaSeleccionada === op ? 'white' : 'var(--pastel-blue-dark)'"
+                [style.border]="respuestaSeleccionada === op ? 'none' : '3px solid var(--pastel-blue)'"
+                style="border-radius: 15px; padding: 15px 20px; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(179, 224, 255, 0.2);">
+          <i class="fas me-2" 
+             [class.fa-check-circle]="respuestaSeleccionada === op"
+             [class.fa-circle]="respuestaSeleccionada !== op"></i>
+          {{ op }}
+        </button>
+      </div>
+
+      <!-- Feedback -->
+      <div *ngIf="feedback" class="mb-3"
+           [class.alert-pastel-success]="feedback.correcto"
+           [class.alert-pastel-danger]="!feedback.correcto">
+        <div class="d-flex align-items-center">
+          <div [class.icon-circle-blue]="feedback.correcto" 
+               [class.icon-circle-orange]="!feedback.correcto"
+               style="width: 40px; height: 40px; font-size: 1.2rem; flex-shrink: 0;"
+               [style.background]="feedback.correcto ? 'linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%)' : 'linear-gradient(135deg, #FFD1DC 0%, #FFC0CB 100%)'">
+            <i class="fas" [class.fa-check]="feedback.correcto" [class.fa-times]="!feedback.correcto"></i>
+          </div>
+          <span class="ms-3 fw-bold">{{ feedback.mensaje }}</span>
+        </div>
+      </div>
+
+      <button (click)="responder()" class="btn-pastel-orange w-100"
+              [disabled]="!respuestaSeleccionada || !!feedback"
+              [style.opacity]="!respuestaSeleccionada || feedback ? '0.5' : '1'"
+              [style.cursor]="!respuestaSeleccionada || feedback ? 'not-allowed' : 'pointer'">
+        <i class="fas fa-check me-2"></i>Confirmar Respuesta
+      </button>
+
+    </div>
+  </div>
+
+</div>

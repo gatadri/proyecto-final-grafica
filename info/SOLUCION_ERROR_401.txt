@@ -1,0 +1,202 @@
+# SOLUCION AL ERROR 401 - TAREAS NO SE MUESTRAN
+
+## PROBLEMA IDENTIFICADO
+
+El frontend está llamando a:
+```
+GET /api/nino/tareas?nino_id=18
+```
+
+Pero las URLs están configuradas como:
+```
+GET /api/tareas/nino/tareas?nino_id=18
+```
+
+## SOLUCION APLICADA
+
+Se agregó soporte para ambos formatos de URL en `backend_django/urls.py`:
+
+```python
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('users.urls')),
+    path('api/', include('tareas.urls')),        # Formato: /api/nino/tareas
+    path('api/tareas/', include('tareas.urls')), # Formato: /api/tareas/nino/tareas
+]
+```
+
+Ahora ambas URLs funcionan:
+- `/api/nino/tareas?nino_id=18` ✓
+- `/api/tareas/nino/tareas?nino_id=18` ✓
+
+## COMO APLICAR LA SOLUCION
+
+### 1. REINICIAR EL SERVIDOR
+
+**IMPORTANTE:** Debes reiniciar el servidor Django para que tome los cambios.
+
+```bash
+# Detén el servidor (Ctrl+C en la terminal donde corre)
+
+# Inicia nuevamente
+cd backend
+python manage.py runserver
+```
+
+### 2. PROBAR EL ENDPOINT
+
+Con el servidor corriendo, prueba:
+
+```bash
+# Opción 1: Formato corto
+curl http://localhost:8000/api/nino/tareas?nino_id=18
+
+# Opción 2: Formato largo
+curl http://localhost:8000/api/tareas/nino/tareas?nino_id=18
+
+# Ambos deben devolver las tareas del niño
+```
+
+### 3. REFRESCAR EL FRONTEND
+
+1. Refresca el navegador (F5)
+2. Haz login nuevamente como niño
+3. Ahora deberías ver las 4 tareas ML
+
+---
+
+## VERIFICACION
+
+### El endpoint debe devolver algo como:
+
+```json
+[
+  {
+    "id": 11,
+    "titulo": "Practica de Multiplicacion",
+    "descripcion": "Resuelve las siguientes multiplicaciones...",
+    "tipo_ejercicio": "multiple",
+    "ejercicios": [
+      {
+        "id": 123,
+        "pregunta": "Cuanto es 4 x 11?",
+        "opciones": ["44", "45", "51", "52"],
+        "respuesta_correcta": "44",
+        ...
+      },
+      ...
+    ]
+  },
+  {
+    "id": 12,
+    "titulo": "Practica de Division",
+    ...
+  },
+  {
+    "id": 13,
+    "titulo": "Practica de Suma de Fracciones",
+    ...
+  },
+  {
+    "id": 14,
+    "titulo": "Practica Mixta de Matematicas",
+    ...
+  }
+]
+```
+
+### Si aún da 401:
+
+1. **Verifica que el niño esté logueado:**
+   - El login debe devolver 200 OK
+   - Debe recibir un token JWT
+
+2. **Verifica los permisos en views.py:**
+   - La vista `NinoTareasView` tiene `permission_classes = [AllowAny]`
+   - Esto significa que NO requiere autenticación
+   - Por lo tanto, NO debería dar 401
+
+3. **Verifica CORS:**
+   - Asegúrate que `CORS_ALLOW_ALL_ORIGINS = True` en settings.py
+
+---
+
+## SI SIGUE SIN FUNCIONAR
+
+### Opción A: Verificar la vista directamente
+
+Edita `backend/tareas/views.py` y asegúrate que `NinoTareasView` tenga:
+
+```python
+class NinoTareasView(APIView):
+    permission_classes = [AllowAny]  # <- ESTO ES IMPORTANTE
+
+    def get(self, request):
+        nino_id = request.query_params.get('nino_id')
+        if not nino_id:
+            return Response({'error': 'nino_id required'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            nino = Nino.objects.get(id=nino_id)
+            tareas = nino.tareas.all()
+            serializer = TareaSerializer(tareas, many=True)
+            return Response(serializer.data)
+        except Nino.DoesNotExist:
+            return Response({'error': 'Nino not found'}, status=status.HTTP_404_NOT_FOUND)
+```
+
+### Opción B: Verificar el frontend
+
+Si el frontend está enviando headers de autenticación incorrectos, puede causar 401.
+
+Revisa en el servicio de Angular que NO esté enviando headers cuando no debe:
+
+```typescript
+// INCORRECTO - No enviar Authorization si no es necesario
+this.http.get(url, { headers: { Authorization: 'Bearer ...' } })
+
+// CORRECTO - Sin headers si el endpoint es AllowAny
+this.http.get(url)
+```
+
+---
+
+## PASOS FINALES
+
+1. **Reinicia el servidor Django** (Ctrl+C y luego `python manage.py runserver`)
+2. **Refresca el navegador** (F5)
+3. **Haz login como niño** (Carla, PIN: 5079)
+4. **Deberías ver las 4 tareas ML**
+
+---
+
+## URLS CORRECTAS PARA EL FRONTEND
+
+Si necesitas actualizar el frontend, estas son las URLs correctas:
+
+```typescript
+// Servicio Angular
+export class TareaService {
+  private apiUrl = 'http://localhost:8000/api';
+
+  obtenerTareasNino(ninoId: number) {
+    // OPCION 1 (más corta)
+    return this.http.get(`${this.apiUrl}/nino/tareas?nino_id=${ninoId}`);
+    
+    // OPCION 2 (más explícita)
+    return this.http.get(`${this.apiUrl}/tareas/nino/tareas?nino_id=${ninoId}`);
+    
+    // Ambas funcionan ahora
+  }
+}
+```
+
+---
+
+## RESUMEN
+
+**Problema:** Error 401 Unauthorized al intentar obtener tareas
+**Causa:** Conflicto en las rutas de URL
+**Solución:** Agregado soporte para ambos formatos
+**Acción requerida:** Reiniciar servidor Django
+
+**DESPUES DE REINICIAR EL SERVIDOR, TODO DEBERIA FUNCIONAR** ✓

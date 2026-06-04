@@ -1,35 +1,41 @@
-<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-  <div class="card shadow" style="width: 420px">
+<div class="min-vh-100 d-flex align-items-center justify-content-center" style="background: #2E5C8A;">
+  <div class="card shadow-lg" style="width: 420px; border: none; border-radius: 12px;">
     <div class="card-body p-5">
 
       <div class="text-center mb-4">
-        <i class="fas fa-graduation-cap fa-3x text-primary mb-3"></i>
-        <h4 class="fw-bold">Sistema Educativo</h4>
+        <div style="width: 80px; height: 80px; margin: 0 auto; background: #FF8C42; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+          <i class="fas fa-graduation-cap fa-3x" style="color: white;"></i>
+        </div>
+        <h4 class="fw-bold" style="color: #2E5C8A;">Sistema Educativo</h4>
         <p class="text-muted">Ingresa con tu cuenta</p>
       </div>
 
-      <div *ngIf="error" class="alert alert-danger">
+      <div *ngIf="error" class="alert" style="background-color: #FFEBEE; border-left: 4px solid #E53935; color: #C62828;">
         <i class="fas fa-exclamation-triangle"></i> {{ error }}
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()">
         <div class="mb-3">
-          <label class="form-label fw-bold">Correo electrónico</label>
+          <label class="form-label fw-bold" style="color: #2E5C8A;">Correo electrónico</label>
           <input type="email" formControlName="email" class="form-control"
+                 style="border: 2px solid #E0E0E0; border-radius: 8px; padding: 0.75rem;"
                  [class.is-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
                  placeholder="correo@ejemplo.com">
           <div class="invalid-feedback">Ingresa un correo válido</div>
         </div>
 
         <div class="mb-4">
-          <label class="form-label fw-bold">Contraseña</label>
+          <label class="form-label fw-bold" style="color: #2E5C8A;">Contraseña</label>
           <input type="password" formControlName="password" class="form-control"
+                 style="border: 2px solid #E0E0E0; border-radius: 8px; padding: 0.75rem;"
                  [class.is-invalid]="form.get('password')?.invalid && form.get('password')?.touched"
                  placeholder="••••••••">
           <div class="invalid-feedback">La contraseña es requerida</div>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100" [disabled]="loading || form.invalid">
+        <button type="submit" class="btn w-100" 
+                style="background-color: #4A90E2; color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 600; transition: all 0.2s;"
+                [disabled]="loading || form.invalid">
           <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
           <i *ngIf="!loading" class="fas fa-sign-in-alt me-2"></i>
           {{ loading ? 'Ingresando...' : 'Iniciar Sesión' }}
@@ -40,12 +46,14 @@
 
       <div class="row g-2">
         <div class="col-12">
-          <a routerLink="/" class="btn btn-outline-secondary w-100">
+          <a routerLink="/" class="btn w-100" 
+             style="background-color: white; color: #6C757D; border: 2px solid #E0E0E0; padding: 0.75rem; border-radius: 8px; font-weight: 500; text-decoration: none; display: block; text-align: center;">
             <i class="fas fa-home me-2"></i> Página principal
           </a>
         </div>
         <div class="col-12">
-          <a routerLink="/auth/nino-login" class="btn btn-outline-success w-100">
+          <a routerLink="/auth/nino-login" class="btn w-100" 
+             style="background-color: #4CAF50; color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 500; text-decoration: none; display: block; text-align: center;">
             <i class="fas fa-child me-2"></i> Soy un Estudiante
           </a>
         </div>

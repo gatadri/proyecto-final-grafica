@@ -1,5 +1,8 @@
 <div class="min-vh-100 d-flex align-items-center justify-content-center"
-     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+     style="background: linear-gradient(135deg, #FFD4A3 0%, #B3E0FF 100%)">
+
+  <!-- Pantalla de descanso -->
+  <app-pantalla-descanso></app-pantalla-descanso>
 
   <div *ngIf="loading" class="text-white text-center">
     <div class="spinner-border mb-3"></div><p>Cargando tarea...</p>
@@ -8,24 +11,26 @@
   <!-- Tarea completada -->
   <div *ngIf="!loading && completada" class="card text-center shadow-lg" style="width: 480px">
     <div class="card-body p-5">
-      <i class="fas fa-star fa-4x text-warning mb-3"></i>
+      <i class="fas fa-star fa-4x mb-3" style="color: #FFA500;"></i>
       <h3 class="fw-bold">¡Tarea Completada!</h3>
       <p class="text-muted">{{ tarea.titulo }}</p>
-      <div class="p-3 rounded mb-4" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)">
-        <h2 class="text-warning fw-bold mb-0">+{{ puntosTotal }}</h2>
+      <div class="p-3 rounded mb-4" style="background: linear-gradient(135deg, #FFD4A3, #FFB88C)">
+        <h2 class="fw-bold mb-0" style="color: #FF8C00;">+{{ puntosTotal }}</h2>
         <small class="text-white">puntos ganados</small>
       </div>
 
       <!-- Logros desbloqueados -->
-      <div *ngIf="logrosDesbloqueados.length > 0" class="alert alert-success mb-4">
-        <h5 class="fw-bold mb-2"><i class="fas fa-trophy text-warning me-2"></i>¡Nuevos Logros!</h5>
+      <div *ngIf="logrosDesbloqueados.length > 0" class="alert mb-4" style="background: #C8E6C9; border: 1px solid #A5D6A7; color: #2E7D32;">
+        <h5 class="fw-bold mb-2">
+          <i class="fas fa-trophy me-2" style="color: #FFA500;"></i>¡Nuevos Logros!
+        </h5>
         <div *ngFor="let logro of logrosDesbloqueados" class="text-start small mb-2">
           <i class="fas fa-check-circle me-2"></i>
           <strong>{{ logro.logro.nombre }}</strong> - {{ logro.logro.descripcion }}
         </div>
       </div>
 
-      <a routerLink="/nino/dashboard" class="btn btn-primary btn-lg w-100">
+      <a routerLink="/nino/dashboard" class="btn btn-lg w-100" style="background: #6BB6E0; color: white;">
         <i class="fas fa-home me-2"></i>Volver al inicio
       </a>
     </div>
@@ -40,8 +45,8 @@
         <small class="text-muted">Ejercicio {{ ejercicioActual + 1 }} de {{ ejercicios.length }}</small>
         <small class="text-muted">{{ puntosTotal }} pts</small>
       </div>
-      <div class="progress mb-4" style="height: 8px">
-        <div class="progress-bar bg-success" [style.width.%]="progreso"></div>
+      <div class="progress mb-4" style="height: 8px; background: #E0F4FF;">
+        <div class="progress-bar" style="background: linear-gradient(135deg, #C8E6C9, #A5D6A7);" [style.width.%]="progreso"></div>
       </div>
 
       <!-- Pregunta -->
@@ -52,22 +57,25 @@
         <button *ngFor="let op of ejercicio.opciones"
                 (click)="respuestaSeleccionada = op"
                 class="btn btn-lg text-start"
-                [class.btn-primary]="respuestaSeleccionada === op"
-                [class.btn-outline-secondary]="respuestaSeleccionada !== op">
+                [style.background]="respuestaSeleccionada === op ? '#87CEEB' : 'white'"
+                [style.color]="respuestaSeleccionada === op ? 'white' : '#666'"
+                [style.border]="respuestaSeleccionada === op ? 'none' : '2px solid #E8E8E8'">
           {{ op }}
         </button>
       </div>
 
       <!-- Feedback -->
       <div *ngIf="feedback" class="alert mb-3"
-           [class.alert-success]="feedback.correcto"
-           [class.alert-danger]="!feedback.correcto">
+           [style.background]="feedback.correcto ? '#C8E6C9' : '#FFD1DC'"
+           [style.border]="feedback.correcto ? '1px solid #A5D6A7' : '1px solid #F8BBD0'"
+           [style.color]="feedback.correcto ? '#2E7D32' : '#C2185B'">
         <i class="fas me-2" [class.fa-check-circle]="feedback.correcto" [class.fa-times-circle]="!feedback.correcto"></i>
         {{ feedback.mensaje }}
       </div>
 
-      <button (click)="responder()" class="btn btn-success btn-lg w-100"
-              [disabled]="!respuestaSeleccionada || !!feedback">
+      <button (click)="responder()" class="btn btn-lg w-100" style="background: #FFB88C; color: white;"
+              [disabled]="!respuestaSeleccionada || !!feedback"
+              [style.opacity]="!respuestaSeleccionada || feedback ? '0.5' : '1'">
         <i class="fas fa-check me-2"></i>Confirmar Respuesta
       </button>
 

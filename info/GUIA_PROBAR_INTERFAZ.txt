@@ -1,0 +1,343 @@
+# GUIA PARA PROBAR EL SISTEMA ML DESDE LA INTERFAZ WEB
+
+## ✅ TAREAS ASIGNADAS CORRECTAMENTE
+
+Las 4 tareas ML han sido asignadas a TODOS los 17 niños del sistema.
+
+---
+
+## 🎯 TAREAS DISPONIBLES
+
+Cada niño tiene acceso a estas 4 tareas nuevas:
+
+### 1. Practica de Multiplicacion (ID: 11)
+   - 12 ejercicios de multiplicación
+   - Ejemplos: "4 x 11 = ?", "4 x 12 = ?", "9 x 4 = ?"
+
+### 2. Practica de Division (ID: 12)
+   - 12 ejercicios de división
+   - Ejemplos: "14 dividido 2 = ?", "40 dividido 8 = ?"
+
+### 3. Practica de Suma de Fracciones (ID: 13)
+   - 12 ejercicios de fracciones
+   - Ejemplos: "2/4 + 2/4 = ?", "3/5 + 4/5 = ?"
+
+### 4. Practica Mixta de Matematicas (ID: 14)
+   - 15 ejercicios variados
+   - Mezcla de multiplicación, división y fracciones
+
+---
+
+## 👦 CREDENCIALES PARA PROBAR
+
+### NIÑOS (usar PIN para login):
+
+| Nombre | PIN | ID |
+|--------|-----|-----|
+| Alejandra | 8778 | 17 |
+| Carla | 5079 | 18 |
+| Mariano | 1220 | 19 |
+
+Para ver más niños disponibles, ejecuta:
+```bash
+cd backend
+python manage.py shell
+>>> from tareas.models import Nino
+>>> for n in Nino.objects.all(): print(f"{n.nombre} - PIN: {n.pin} - ID: {n.id}")
+```
+
+---
+
+## 🚀 PASOS PARA PROBAR
+
+### 1. Iniciar el Servidor Backend
+
+```bash
+cd backend
+python manage.py runserver
+```
+
+El servidor estará en: http://localhost:8000
+
+### 2. Iniciar el Frontend Angular
+
+```bash
+cd frontend
+ng serve
+```
+
+O si usas npm:
+```bash
+cd frontend
+npm start
+```
+
+La aplicación estará en: http://localhost:4200
+
+### 3. Login como Niño
+
+1. Ir a http://localhost:4200
+2. Seleccionar "Login como Niño" (o similar)
+3. Usar credenciales:
+   - **Nombre:** Alejandra
+   - **PIN:** 8778
+
+### 4. Ver las Tareas
+
+Una vez logueado, el niño debería ver:
+- Sus tareas anteriores (si tiene)
+- Las 4 tareas ML nuevas:
+  * Practica de Multiplicacion
+  * Practica de Division
+  * Practica de Suma de Fracciones
+  * Practica Mixta de Matematicas
+
+### 5. Resolver una Tarea
+
+Al seleccionar cualquiera de las tareas ML:
+
+1. Verá los ejercicios (12 o 15 según la tarea)
+2. Cada ejercicio tiene 4 opciones de respuesta
+3. Al responder, el sistema debe:
+   - Enviar datos al endpoint ML
+   - Analizar la respuesta en tiempo real
+   - Detectar tipo de error (si falla)
+   - Medir concentración
+
+### 6. Ver la Pantalla de Descanso
+
+Si el niño:
+- Responde varios ejercicios mal
+- Tarda mucho tiempo
+- Cambia de pestaña
+- Está inactivo
+
+El sistema detectará distracción y mostrará la pantalla de descanso de 10 segundos.
+
+---
+
+## 🔍 VERIFICAR QUE FUNCIONA
+
+### Opción A: Desde la Interfaz
+
+1. Login como niño
+2. Resolver 5-6 ejercicios simulando distracción:
+   - Responder lento (15-20 segundos)
+   - Cambiar de pestaña mientras resuelves
+   - Responder incorrectamente
+3. Esperar a que aparezca la pantalla de descanso
+
+### Opción B: Verificar con API
+
+```bash
+# Ver que el niño tiene las tareas
+curl http://localhost:8000/api/tareas/nino/tareas?nino_id=17
+
+# Ver una tarea específica
+curl http://localhost:8000/api/tareas/nino/tareas/11?nino_id=17
+```
+
+### Opción C: Ver en Base de Datos
+
+```sql
+-- Ver tareas asignadas al niño
+SELECT * FROM tareas_tarea_ninos WHERE nino_id = 17;
+
+-- Ver predicciones de errores
+SELECT * FROM tareas_prediccionerror WHERE nino_id = 17;
+
+-- Ver eventos de distracción
+SELECT * FROM tareas_eventodistruccion WHERE nino_id = 17;
+```
+
+---
+
+## 📊 QUE ESPERAR DEL SISTEMA
+
+### Al Resolver Ejercicios:
+
+**Si responde bien y rápido:**
+- No se detecta error
+- Focus score alto (> 0.6)
+- Continúa normalmente
+
+**Si responde mal o lento:**
+- Se detecta tipo de error (multiplicacion, division, fracciones)
+- Focus score puede bajar
+- Se guarda en PrediccionError
+
+**Si está muy distraído:**
+- Focus score < 0.4
+- Aparece pantalla de descanso (10 segundos)
+- Se guarda en EventoDistraccion
+
+### Desde el Panel del Profesor/Padre:
+
+Deberían poder ver:
+- GET `/api/tareas/ml/reporte-errores?nino_id=17`
+  * Tipos de errores detectados
+  * Cantidad de cada tipo
+  * Temas que necesita reforzar
+
+- GET `/api/tareas/ml/estadisticas?nino_id=17`
+  * Focus score promedio
+  * Total de distracciones
+  * Evolución de concentración
+
+---
+
+## 🛠️ SOLUCIÓN DE PROBLEMAS
+
+### No veo las tareas ML
+
+**Verificar:**
+```bash
+cd backend
+python ver_tareas_creadas.py
+```
+
+**Reasignar:**
+```bash
+python asignar_tareas_simple.py
+```
+
+### El servidor no responde
+
+**Verificar que esté corriendo:**
+```bash
+# Terminal 1
+cd backend
+python manage.py runserver
+
+# Terminal 2
+curl http://localhost:8000/api/tareas/nino/tareas?nino_id=17
+```
+
+### No se detectan distracciones
+
+**Recordar:**
+- El ML necesita mínimo 3 respuestas para detectar patrones
+- Simula comportamiento distraído:
+  * Tiempo > 15000ms
+  * tab_blur_count > 3
+  * idle_ms > 5000
+  * erratic_clicks > 8
+
+### No aparece pantalla de descanso
+
+**Verificar que el componente esté integrado:**
+- `frontend/src/app/components/pantalla-descanso.component.ts`
+- Debe estar importado en el componente de ejercicios
+- Verificar la integración con MLService
+
+---
+
+## 📝 INTEGRACIÓN EN EL FRONTEND
+
+Si el frontend NO está integrando el ML automáticamente, revisa:
+
+### 1. Servicio ML Service
+
+Asegúrate de tener:
+```typescript
+// frontend/src/app/services/ml.service.ts
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MLService {
+  private apiUrl = 'http://localhost:8000/api/tareas/ml';
+
+  constructor(private http: HttpClient) { }
+
+  analizarRespuesta(datos: any) {
+    return this.http.post(`${this.apiUrl}/analizar-respuesta`, datos);
+  }
+}
+```
+
+### 2. Componente de Ejercicios
+
+En el componente donde el niño resuelve ejercicios:
+
+```typescript
+import { MLService } from './services/ml.service';
+
+// En el método que procesa la respuesta:
+onSubmitRespuesta(ejercicio, respuesta) {
+  const datos = {
+    nino_id: this.ninoActual.id,
+    ejercicio_id: ejercicio.id,
+    tiempo_ms: this.tiempoRespuesta,
+    correcto: respuesta === ejercicio.respuesta_correcta,
+    tab_blur_count: this.tabBlurCount,
+    idle_ms: this.idleMs,
+    erratic_clicks: this.erraticClicks
+  };
+
+  this.mlService.analizarRespuesta(datos).subscribe(result => {
+    if (result.distraccion?.requiere_descanso) {
+      // Mostrar pantalla de descanso
+      this.pantallaDescanso.iniciarDescanso();
+    }
+  });
+}
+```
+
+---
+
+## ✅ CHECKLIST DE VERIFICACIÓN
+
+- [ ] Servidor backend corriendo (http://localhost:8000)
+- [ ] Frontend corriendo (http://localhost:4200)
+- [ ] Puedo hacer login como niño
+- [ ] Veo las 4 tareas ML en la lista
+- [ ] Puedo abrir una tarea
+- [ ] Veo los ejercicios con 4 opciones
+- [ ] Puedo responder ejercicios
+- [ ] El sistema guarda las respuestas
+- [ ] (Opcional) Se envía al ML para análisis
+- [ ] (Opcional) Aparece pantalla de descanso si estoy distraído
+
+---
+
+## 🎯 PRÓXIMO PASO
+
+**PRUEBA AHORA:**
+
+1. Abre 2 terminales
+2. Terminal 1: `cd backend && python manage.py runserver`
+3. Terminal 2: `cd frontend && ng serve` (o `npm start`)
+4. Abre navegador: http://localhost:4200
+5. Login como Alejandra (PIN: 8778)
+6. ¡Resuelve las tareas ML!
+
+---
+
+## 📞 ENDPOINTS PRINCIPALES
+
+```
+# Ver tareas del niño
+GET /api/tareas/nino/tareas?nino_id=17
+
+# Ver tarea específica con ejercicios
+GET /api/tareas/nino/tareas/11?nino_id=17
+
+# Analizar respuesta (ML)
+POST /api/tareas/ml/analizar-respuesta
+
+# Ver reporte de errores
+GET /api/tareas/ml/reporte-errores?nino_id=17
+
+# Ver estadísticas
+GET /api/tareas/ml/estadisticas?nino_id=17
+
+# Completar tarea
+POST /api/tareas/nino/completar-tarea
+```
+
+---
+
+TODO LISTO PARA PROBAR DESDE LA INTERFAZ! 🚀

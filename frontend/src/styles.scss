@@ -1,30 +1,50 @@
 :root {
   --sidebar-width: 280px;
-  --primary-color: #4f46e5;
-  --secondary-color: #6366f1;
+  
+  /* Colores principales profesionales - Naranja y Azul */
+  --primary-blue: #4A90E2;
+  --primary-blue-dark: #2E5C8A;
+  --primary-orange: #FF8C42;
+  --primary-orange-dark: #E67932;
+  
+  /* Colores de estado */
+  --success: #4CAF50;
+  --danger: #E53935;
+  --warning: #FFA726;
+  --info: #29B6F6;
+  
+  /* Colores de fondo */
+  --bg-light: #F5F7FA;
+  --bg-white: #FFFFFF;
+  --text-dark: #2C3E50;
+  --text-muted: #6C757D;
 }
 
 body {
-  background: #f8fafc;
+  background: var(--bg-light);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-dark);
 }
 
-// Sidebar
+// Sidebar - Azul profesional sólido
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
   width: var(--sidebar-width);
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  background: var(--primary-blue-dark);
   color: white;
   z-index: 1000;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 15px rgba(0,0,0,0.1);
   overflow-y: auto;
 
   .sidebar-header {
     padding: 1.5rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    background: var(--primary-blue);
+    
+    i { color: var(--primary-orange); }
   }
 
   .sidebar-menu { padding: 1rem 0; }
@@ -32,31 +52,42 @@ body {
   .menu-item {
     display: block;
     padding: 0.75rem 1.5rem;
-    color: rgba(255,255,255,0.8);
+    color: rgba(255,255,255,0.85);
     text-decoration: none;
     border-left: 3px solid transparent;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 
-    i { width: 20px; margin-right: 0.75rem; }
+    i { width: 20px; margin-right: 0.75rem; color: var(--primary-orange); }
 
-    &:hover, &.active {
-      background: rgba(255,255,255,0.15);
+    &:hover {
+      background: rgba(255,255,255,0.1);
       color: white;
-      border-left-color: white;
-      transform: translateX(5px);
+      border-left-color: var(--primary-orange);
+      padding-left: 1.75rem;
+    }
+    
+    &.active {
+      background: var(--primary-orange);
+      color: white;
+      border-left-color: var(--primary-orange);
+      font-weight: 600;
+      
+      i { color: white; }
     }
   }
 
   .user-info {
     padding: 1rem 1.5rem;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.1);
   }
 
   .user-avatar {
     width: 40px; height: 40px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.2);
+    background: var(--primary-orange);
     display: flex; align-items: center; justify-content: center;
+    color: white;
   }
 
   .logout-btn {
@@ -66,8 +97,12 @@ body {
     padding: 0.5rem 1rem;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    &:hover { background: rgba(255,255,255,0.2); }
+    transition: all 0.2s ease;
+    
+    &:hover { 
+      background: var(--danger);
+      border-color: var(--danger);
+    }
   }
 }
 
@@ -75,22 +110,96 @@ body {
 .main-content {
   margin-left: var(--sidebar-width);
   min-height: 100vh;
+  background: var(--bg-light);
 }
 
-// Cards
+// Cards profesionales
 .card {
   border: none;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+  background: var(--bg-white);
 
-  &:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+  &:hover { 
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+}
+
+// Botones profesionales
+.btn-primary {
+  background-color: var(--primary-blue) !important;
+  border-color: var(--primary-blue) !important;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: var(--primary-blue-dark) !important;
+    border-color: var(--primary-blue-dark) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+}
+
+.btn-success {
+  background-color: var(--success) !important;
+  border-color: var(--success) !important;
+}
+
+.btn-danger {
+  background-color: var(--danger) !important;
+  border-color: var(--danger) !important;
+}
+
+.btn-warning {
+  background-color: var(--warning) !important;
+  border-color: var(--warning) !important;
+}
+
+.btn-info {
+  background-color: var(--info) !important;
+  border-color: var(--info) !important;
+}
+
+// Badges profesionales
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+}
+
+// Progress bars
+.progress {
+  background-color: #E9ECEF;
+  border-radius: 4px;
+}
+
+// Text colors
+.text-primary { color: var(--primary-blue) !important; }
+.text-orange { color: var(--primary-orange) !important; }
+
+// Background colors
+.bg-primary { background-color: var(--primary-blue) !important; }
+.bg-orange { background-color: var(--primary-orange) !important; }
+
+// Spinners
+.spinner-border {
+  &.text-primary { color: var(--primary-blue) !important; }
+}
+
+// Tables
+.table {
+  th {
+    color: var(--text-dark);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+  }
 }
 
 // Skin card hover
 .skin-card:hover {
   transform: translateY(-4px);
-  border-color: #007bff !important;
+  border-color: var(--primary-blue) !important;
 }
 
 // Responsive

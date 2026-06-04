@@ -1,0 +1,403 @@
+# GUIA PRACTICA - INTEGRACION EN EL PROYECTO ANGULAR EXISTENTE
+
+## PASO 1: Copiar archivos necesarios
+
+### Servicios:
+Copia el archivo:
+```
+frontend/src/app/services/ml.service.ts
+```
+
+A tu carpeta de servicios del proyecto (si tienes otra estructura)
+
+### Componentes:
+Copia el archivo:
+```
+frontend/src/app/components/pantalla-descanso.component.ts
+```
+
+A tu carpeta de componentes
+
+---
+
+## PASO 2: Integración en componente de ejercicios/tareas
+
+Busca el componente donde los niños resuelven ejercicios.
+Por ejemplo: `tarea-resolver.component.ts` o similar
+
+### A) Importar dependencias:
+
+```typescript
+import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { PantallaDescansoComponent } from './components/pantalla-descanso.component';
+import { MLService } from './services/ml.service';
+```
+
+### B) Agregar al template:
+
+En tu archivo HTML (al inicio, antes de todo):
+
+```html
+<app-pantalla-descanso></app-pantalla-descanso>
+
+<!-- Tu código existente aquí -->
+```
+
+### C) Agregar en el componente:
+
+```typescript
+export class TareaResolverComponent implements OnInit, OnDestroy {
+  @ViewChild(PantallaDescansoComponent) pantallaDescanso!: PantallaDescansoComponent;
+
+  // Variables para tracking
+  tiempoInicio = 0;
+  tabBlurCount = 0;
+  idleMs = 0;
+  erraticClicks = 0;
+  lastActivity = Date.now();
+
+  constructor(
+    // ... tus servicios existentes
+    private mlService: MLService
+  ) {}
+
+  ngOnInit() {
+    // ... tu código existente
+    this.iniciarMonitoreo();
+  }
+
+  ngOnDestroy() {
+    this.detenerMonitoreo();
+  }
+
+  // Cuando el niño responde un ejercicio
+  onSubmitRespuesta(ejercicio: any, respuesta: any) {
+    const tiempoRespuesta = Date.now() - this.tiempoInicio;
+    const correcto = respuesta === ejercicio.respuesta_correcta;
+
+    // Analizar con ML
+    this.mlService.analizarRespuesta({
+      nino_id: this.ninoActual.id,
+      ejercicio_id: ejercicio.id,
+      tiempo_ms: tiempoRespuesta,
+      correcto: correcto,
+      tab_blur_count: this.tabBlurCount,
+      idle_ms: this.idleMs,
+      erratic_clicks: this.erraticClicks
+    }).subscribe(
+      result => {
+        // Si requiere descanso
+        if (result.distraccion?.requiere_descanso) {
+          this.pantallaDescanso.iniciarDescanso();
+          // Pausar ejercicios por 10 segundos
+          setTimeout(() => {
+            this.resetearMetricas();
+            this.continuarEjercicios();
+          }, 10500);
+        } else {
+          // Continuar normalmente
+          this.siguienteEjercicio();
+        }
+
+        // Log del error detectado
+        if (result.prediccion && !correcto) {
+          console.log('Error detectado:', result.prediccion.error_type);
+        }
+      },
+      error => {
+        console.error('Error ML:', error);
+        // Continuar sin análisis si falla
+        this.siguienteEjercicio();
+      }
+    );
+  }
+
+  // Métodos de monitoreo
+  iniciarMonitoreo() {
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
+    document.addEventListener('click', this.onDocumentClick);
+    document.addEventListener('mousemove', this.onActivity);
+    document.addEventListener('keypress', this.onActivity);
+  }
+
+  detenerMonitoreo() {
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
+    document.removeEventListener('click', this.onDocumentClick);
+    document.removeEventListener('mousemove', this.onActivity);
+    document.removeEventListener('keypress', this.onActivity);
+  }
+
+  onVisibilityChange = () => {
+    if (document.hidden) {
+      this.tabBlurCount++;
+    }
+  }
+
+  onDocumentClick = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest('button, input, a, [role="button"]')) {
+      this.erraticClicks++;
+    }
+  }
+
+  onActivity = () => {
+    this.lastActivity = Date.now();
+  }
+
+  resetearMetricas() {
+    this.tabBlurCount = 0;
+    this.idleMs = 0;
+    this.erraticClicks = 0;
+    this.tiempoInicio = Date.now();
+  }
+}
+```
+
+---
+
+## PASO 3: Ver reportes (para profesores/padres)
+
+### En el componente del profesor/padre:
+
+```typescript
+import { MLService } from './services/ml.service';
+
+export class DashboardProfesorComponent implements OnInit {
+  constructor(private mlService: MLService) {}
+
+  verReporteEstudiante(ninoId: number) {
+    // Ver errores detectados
+    this.mlService.obtenerReporteErrores(ninoId).subscribe(
+      data => {
+        console.log('Errores del niño:', data.errores);
+        // Mostrar en UI
+        this.erroresDetectados = data.errores;
+        /*
+        Ejemplo de respuesta:
+        {
+          nino: { nombre: 'Juan', ... },
+          errores: [
+            {
+              tipo: 'fracciones',
+              cantidad: 5,
+              probabilidad_promedio: 0.75
+            }
+          ]
+        }
+        */
+      }
+    );
+
+    // Ver estadísticas completas
+    this.mlService.obtenerEstadisticas(ninoId).subscribe(
+      data => {
+        console.log('Focus promedio:', data.focus_promedio);
+        console.log('Distracciones:', data.total_distracciones);
+        this.estadisticas = data;
+      }
+    );
+  }
+
+  notificarPadre(ninoId: number) {
+    this.mlService.notificarPadreProfesor(ninoId).subscribe(
+      data => {
+        console.log('Notificación enviada:', data);
+        alert('Se ha preparado la notificación');
+      }
+    );
+  }
+}
+```
+
+### Template del profesor:
+
+```html
+<div class="estudiante-card" *ngFor="let nino of estudiantes">
+  <h3>{{ nino.nombre }}</h3>
+  
+  <button (click)="verReporteEstudiante(nino.id)">
+    Ver Reporte ML
+  </button>
+  
+  <div *ngIf="erroresDetectados">
+    <h4>Errores Detectados:</h4>
+    <ul>
+      <li *ngFor="let error of erroresDetectados">
+        {{ error.tipo }}: {{ error.cantidad }} veces
+        ({{ error.probabilidad_promedio | percent }})
+      </li>
+    </ul>
+    
+    <button (click)="notificarPadre(nino.id)">
+      Notificar a Padre
+    </button>
+  </div>
+</div>
+```
+
+---
+
+## PASO 4: Personalizar pantalla de descanso (OPCIONAL)
+
+Edita: `pantalla-descanso.component.ts`
+
+### Cambiar duración:
+
+```typescript
+iniciarDescanso() {
+  this.segundosRestantes = 15; // Cambiar de 10 a 15 segundos
+  // ...
+}
+```
+
+### Cambiar mensajes:
+
+```typescript
+mensajes = [
+  '¡Estás haciendo un gran trabajo!',
+  'Tómate un momento para respirar',
+  '¡Sigue así, campeón!',
+  // Agrega los que quieras
+];
+```
+
+### Cambiar colores:
+
+En el CSS del componente, busca:
+```css
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+```
+
+Cambia por los colores que prefieras.
+
+---
+
+## PASO 5: Ajustar umbrales de detección (OPCIONAL)
+
+En el backend, edita: `backend/tareas/ml_utils.py`
+
+```python
+def detectar_distraccion(historial_estudiante):
+    # ...
+    
+    # Cambiar umbral (actualmente 0.4)
+    requiere_descanso = focus_promedio < 0.3  # Más estricto
+    # o
+    requiere_descanso = focus_promedio < 0.5  # Más permisivo
+    
+    return {
+        'requiere_descanso': requiere_descanso,
+        'focus_score': float(focus_promedio)
+    }
+```
+
+---
+
+## EJEMPLOS DE USO REAL
+
+### Ejemplo 1: Tarea de matemáticas
+
+```typescript
+resolverEjercicioMatematicas(ejercicio: any, respuesta: string) {
+  const inicio = this.tiempoInicio;
+  const fin = Date.now();
+  
+  const correcto = this.verificarRespuesta(ejercicio, respuesta);
+  
+  // Análisis ML
+  this.mlService.analizarRespuesta({
+    nino_id: this.ninoLogueado.id,
+    ejercicio_id: ejercicio.id,
+    tiempo_ms: fin - inicio,
+    correcto: correcto,
+    tab_blur_count: this.tabBlurCount,
+    idle_ms: this.calcularTiempoInactivo(),
+    erratic_clicks: this.erraticClicks
+  }).subscribe(resultado => {
+    if (resultado.distraccion.requiere_descanso) {
+      this.mostrarPantallaDescanso();
+    }
+    this.actualizarProgreso(correcto);
+  });
+}
+```
+
+### Ejemplo 2: Práctica libre
+
+```typescript
+finalizarPractica() {
+  // Obtener resumen de errores
+  this.mlService.obtenerReporteErrores(this.ninoId).subscribe(
+    reporte => {
+      // Mostrar al niño sus áreas de mejora
+      this.areasDeM ejora = reporte.errores.map(e => e.tipo);
+      this.mostrarResumen();
+    }
+  );
+}
+```
+
+---
+
+## DEBUGGING
+
+### Ver en consola lo que detecta:
+
+```typescript
+this.mlService.analizarRespuesta(datos).subscribe(result => {
+  console.log('===== ANALISIS ML =====');
+  console.log('Error:', result.prediccion?.error_type);
+  console.log('Prob. error siguiente:', result.prediccion?.prob_mistake_next);
+  console.log('Focus score:', result.distraccion?.focus_score);
+  console.log('Requiere descanso:', result.distraccion?.requiere_descanso);
+  console.log('=======================');
+});
+```
+
+---
+
+## NOTAS IMPORTANTES
+
+1. **El servidor Django debe estar corriendo**
+   ```bash
+   cd backend
+   python manage.py runserver
+   ```
+
+2. **Importar el módulo correcto**
+   Si usas módulos standalone, ya está listo
+   Si usas NgModule, agrega a imports:
+   ```typescript
+   imports: [
+     // ...
+     PantallaDescansoComponent
+   ]
+   ```
+
+3. **CORS configurado**
+   Ya está configurado en settings.py para localhost:4200
+
+4. **El sistema es no-bloqueante**
+   Si el ML falla, la app continúa normalmente
+
+---
+
+## RESULTADO FINAL
+
+Cuando todo esté integrado:
+
+1. El niño resuelve ejercicios normalmente
+2. El sistema detecta automáticamente:
+   - Tipos de errores (fracciones, álgebra, etc.)
+   - Nivel de distracción
+3. Si está distraído (focus < 0.4):
+   - Muestra pantalla de descanso 10 segundos
+   - Lo guarda en base de datos
+4. Los profesores/padres pueden ver:
+   - Qué temas necesita reforzar
+   - Cuándo se distrae más
+   - Estadísticas de concentración
+
+---
+
+¡Todo listo para usar! 🚀

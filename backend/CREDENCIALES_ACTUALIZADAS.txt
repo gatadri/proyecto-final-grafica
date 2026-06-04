@@ -1,0 +1,60 @@
+=== CREDENCIALES DE USUARIOS - SISTEMA DE LOGIN CORREGIDO ===
+
+DIRECTOR:
+- Email: director@correo.com
+- Password: password
+
+PROFESORES:
+1. Email: profecarlos@correo.com | Password: password
+2. Email: ayllon814@correo.com | Password: password
+3. Email: carlos@correo.com | Password: 123456798
+4. Email: ana@correo.com | Password: 132465789
+5. Email: luis@correo.com | Password: 123456789
+6. Email: maria@correo.com | Password: 123465789
+
+PADRES:
+1. Email: jose@correo.com | Password: password
+2. Email: fabricio@correo.com | Password: password
+3. Email: amilcar@correo.com | Password: password
+4. Email: carla@correo.com | Password: password
+5. Email: juan@correo.com | Password: 123456789
+6. Email: pedro@correo.com | Password: 123456789
+7. Email: lucia@correo.com | Password: 123456789
+8. Email: mario@correo.com | Password: 123456789
+9. Email: sofia@correo.com | Password: 123456789
+10. Email: diego@correo.com | Password: 123456789
+11. Email: elena@correo.com | Password: 123456789
+12. Email: raul@correo.com | Password: 123456789
+13. Email: paola@correo.com | Password: 123456789
+14. Email: andres@correo.com | Password: 123456789
+
+=== ESTADO DEL SISTEMA ===
+✓ Total usuarios en BD: 21
+✓ Usuarios activos: 21
+✓ Usuarios inactivos: 0
+✓ Todas las contraseñas correctamente hasheadas
+✓ Todos los usuarios pueden iniciar sesión
+
+=== EJEMPLOS PARA PRUEBAS RÁPIDAS ===
+
+Director:
+  Email: director@correo.com
+  Password: password
+
+Profesor (opción 1):
+  Email: profecarlos@correo.com
+  Password: password
+
+Padre (opción 1):
+  Email: jose@correo.com
+  Password: password
+
+Padre (opción 2):
+  Email: juan@correo.com
+  Password: 123456789
+
+=== NOTAS IMPORTANTES ===
+- Todas las contraseñas están correctamente encriptadas con hash
+- Todos los usuarios están activos y pueden iniciar sesión
+- Los roles están en minúsculas (director, profesor, padre)
+- El backend de autenticación usa email como USERNAME_FIELD

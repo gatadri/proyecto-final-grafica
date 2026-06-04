@@ -1,0 +1,144 @@
+# SISTEMA DE DETECCIÓN DE DISTRACCIÓN - MEJORAS IMPLEMENTADAS
+
+## RESUMEN
+Se ha mejorado el sistema de detección de distracción para que la red neuronal ahora detecte dos nuevos patrones críticos:
+1. **Errores consecutivos**: Cuando el niño comete 3 o más errores seguidos
+2. **Tiempo excesivo**: Cuando el niño tarda el triple del tiempo normal en responder
+
+## CAMBIOS REALIZADOS
+
+### 1. Modelo de Entrenamiento (ml/train.py)
+- ✅ Añadidas dos nuevas características al dataset:
+  - `consecutive_errors`: Contador de errores consecutivos
+  - `excessive_time`: Flag binario (1 si tiempo > 3x promedio)
+- ✅ Las características se calculan automáticamente durante el preprocesamiento
+- ✅ El modelo FFN y RNN ahora procesan 12 características en lugar de 10
+
+### 2. Predicción (ml/predict.py)
+- ✅ Actualizado el array `num_features` para incluir las nuevas características
+- ✅ Mantiene compatibilidad con el sistema existente
+
+### 3. Utilidades ML (backend/tareas/ml_utils.py)
+- ✅ **detectar_distraccion()**: Ahora verifica tres condiciones:
+  - Si hay 3+ errores consecutivos → Muestra pantalla de distracción (motivo: 'errores_consecutivos')
+  - Si el tiempo de respuesta es > 3x promedio → Muestra pantalla (motivo: 'tiempo_excesivo')
+  - Si el focus_score < 0.4 → Muestra pantalla (motivo: 'bajo_focus')
+  
+- ✅ **crear_features_desde_respuesta()**: 
+  - Nuevo parámetro opcional `historial_reciente`
+  - Calcula automáticamente `consecutive_errors` y `excessive_time`
+
+### 4. Endpoint API (backend/tareas/views.py)
+- ✅ **AnalizarRespuestaView**: 
+  - Obtiene historial reciente del niño (últimas 10 respuestas)
+  - Calcula errores consecutivos en tiempo real
+  - Calcula si el tiempo es excesivo comparado con el promedio del niño
+  - Retorna información adicional: `consecutive_errors` y `excessive_time`
+  - Guarda eventos de distracción con el motivo específico
+
+### 5. Dataset (ml/actualizar_dataset.py)
+- ✅ Script nuevo para actualizar el dataset existente
+- ✅ Añade las columnas `consecutive_errors` y `excessive_time` al CSV
+- ✅ Calcula valores históricos para cada estudiante
+
+## CÓMO FUNCIONA
+
+### Detección de Errores Consecutivos
+```
+Historial: [correcto, incorrecto, incorrecto, incorrecto]
+                                    ^         ^         ^
+                                    1         2         3
+Resultado: consecutive_errors = 3 → MUESTRA PANTALLA DE DISTRACCIÓN
+```
+
+### Detección de Tiempo Excesivo
+```
+Tiempos normales del niño: [2000ms, 2500ms, 3000ms, 2200ms]
+Promedio: 2425ms
+Tiempo triple: 7275ms
+
+Respuesta actual: 8000ms > 7275ms → MUESTRA PANTALLA DE DISTRACCIÓN
+```
+
+### Respuesta del API
+```json
+{
+  "prediccion": {
+    "error_type": "attention",
+    "prob_mistake_next": 0.75
+  },
+  "distraccion": {
+    "requiere_descanso": true,
+    "focus_score": 0.3,
+    "motivo": "errores_consecutivos"
+  },
+  "consecutive_errors": 3,
+  "excessive_time": 1
+}
+```
+
+## INTEGRACIÓN CON FRONTEND
+
+El frontend debe:
+1. Llamar al endpoint `/api/tareas/analizar-respuesta/` después de cada ejercicio
+2. Verificar `distraccion.requiere_descanso === true`
+3. Si es true, mostrar la pantalla de distracción
+4. Opcional: Mostrar mensaje específico según `distraccion.motivo`:
+   - `"errores_consecutivos"`: "¡Hey! Has cometido varios errores seguidos. Tomemos un descanso."
+   - `"tiempo_excesivo"`: "¡Veo que estás tardando más de lo normal! ¿Qué tal un descanso?"
+   - `"bajo_focus"`: "Parece que estás perdiendo la concentración. ¡Hora de descansar!"
+
+## PASOS PARA ACTIVAR
+
+1. **Actualizar el dataset existente:**
+   ```bash
+   cd ml
+   python actualizar_dataset.py
+   ```
+
+2. **Reentrenar los modelos:**
+   ```bash
+   python train.py
+   ```
+
+3. **Reiniciar el servidor Django:**
+   ```bash
+   cd ../backend
+   python manage.py runserver
+   ```
+
+4. **El sistema ya está listo para detectar las nuevas condiciones**
+
+## VENTAJAS
+
+✅ **Detección proactiva**: No espera a que el focus baje, detecta problemas inmediatamente
+✅ **Específica**: Identifica exactamente qué está causando la distracción
+✅ **Adaptativa**: El tiempo "excesivo" se adapta a cada niño individualmente
+✅ **Retroalimentación clara**: El frontend puede mostrar mensajes personalizados
+✅ **Historial completo**: Todos los eventos se guardan en EventoDistraccion para análisis
+
+## CONFIGURACIÓN
+
+Puedes ajustar estos valores en `ml_utils.py`:
+
+- **Umbral de errores consecutivos**: Actualmente 3 (línea ~37)
+- **Multiplicador de tiempo**: Actualmente 3x (línea ~42)
+- **Umbral de focus score**: Actualmente 0.4 (línea ~49)
+
+## MONITOREO
+
+Para ver las estadísticas:
+```
+GET /api/tareas/estadisticas-ml/?nino_id=X
+```
+
+Incluye:
+- Total de distracciones detectadas
+- Focus score promedio
+- Últimos 10 eventos con detalles
+- Motivos de distracción más frecuentes
+
+## SOPORTE
+
+Si necesitas ajustar los umbrales o agregar nuevas condiciones de detección, 
+modifica la función `detectar_distraccion()` en `backend/tareas/ml_utils.py`.

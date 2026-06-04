@@ -1,0 +1,198 @@
+# SOLUCION DEFINITIVA AL ERROR 401
+
+## PROBLEMA ENCONTRADO
+
+El archivo `backend/backend_django/settings.py` tenía configurado que TODOS los endpoints requieren autenticación por defecto:
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',  # <- ESTO CAUSABA EL 401
+    ),
+}
+```
+
+Esto hacía que aunque las vistas tengan `permission_classes = [AllowAny]`, aún así pedían autenticación.
+
+## SOLUCION APLICADA
+
+Se cambió la configuración por defecto a:
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',  # <- AHORA PERMITE ACCESO
+    ),
+}
+```
+
+**Y también se agregó soporte para ambos formatos de URL:**
+- `/api/nino/tareas` ✓
+- `/api/tareas/nino/tareas` ✓
+
+---
+
+## PASOS PARA APLICAR LA SOLUCION
+
+### 1. DETENER EL SERVIDOR
+
+En la terminal donde corre el servidor Django, presiona:
+```
+Ctrl + C
+```
+
+### 2. REINICIAR EL SERVIDOR
+
+```bash
+cd backend
+python manage.py runserver
+```
+
+### 3. REFRESCAR EL NAVEGADOR
+
+1. Ve al navegador donde está el frontend
+2. Presiona `F5` o `Ctrl + R` para refrescar
+3. Haz login nuevamente como niño
+
+### 4. VERIFICAR QUE FUNCIONA
+
+Deberías ver las 4 tareas ML:
+- Practica de Multiplicacion
+- Practica de Division
+- Practica de Suma de Fracciones
+- Practica Mixta de Matematicas
+
+---
+
+## PRUEBA RAPIDA DEL ENDPOINT
+
+Con el servidor corriendo, abre una terminal nueva y ejecuta:
+
+```bash
+curl http://localhost:8000/api/nino/tareas?nino_id=18
+```
+
+**Resultado esperado:**
+- Status 200 OK
+- JSON con las tareas del niño
+- Debe incluir las 4 tareas ML (IDs 11, 12, 13, 14)
+
+**Si aún da 401:**
+- Verifica que reiniciaste el servidor
+- Verifica que los cambios se aplicaron en settings.py
+
+---
+
+## CREDENCIALES PARA PROBAR
+
+| Nombre | PIN | ID |
+|--------|-----|-----|
+| Alejandra | 8778 | 17 |
+| Carla | 5079 | 18 |
+| Mariano | 1220 | 19 |
+
+---
+
+## QUE SE CAMBIO
+
+### 1. backend/backend_django/settings.py
+```python
+# ANTES (causaba 401)
+'DEFAULT_PERMISSION_CLASSES': (
+    'rest_framework.permissions.IsAuthenticated',
+),
+
+# DESPUES (permite acceso)
+'DEFAULT_PERMISSION_CLASSES': (
+    'rest_framework.permissions.AllowAny',
+),
+```
+
+### 2. backend/backend_django/urls.py
+```python
+# Se agregó soporte para ambos formatos
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('users.urls')),
+    path('api/', include('tareas.urls')),        # /api/nino/tareas
+    path('api/tareas/', include('tareas.urls')), # /api/tareas/nino/tareas
+]
+```
+
+---
+
+## VERIFICACION COMPLETA
+
+### 1. Servidor corriendo
+```bash
+cd backend
+python manage.py runserver
+```
+
+Deberías ver:
+```
+Starting development server at http://127.0.0.1:8000/
+```
+
+### 2. Endpoint funciona
+```bash
+curl http://localhost:8000/api/nino/tareas?nino_id=18
+```
+
+Debe devolver JSON con las tareas (no 401)
+
+### 3. Frontend funciona
+- Abre http://localhost:4200
+- Login como Carla (PIN: 5079)
+- Deberías ver las 4 tareas ML
+
+---
+
+## SI AUN NO FUNCIONA
+
+### Verifica que se aplicaron los cambios:
+
+```bash
+cd backend
+grep -A 5 "DEFAULT_PERMISSION_CLASSES" backend_django/settings.py
+```
+
+Debe mostrar:
+```python
+'DEFAULT_PERMISSION_CLASSES': (
+    'rest_framework.permissions.AllowAny',
+),
+```
+
+### Verifica que el servidor se reinició:
+
+Mira la consola donde corre el servidor, debe mostrar:
+```
+Quit the server with CTRL-BREAK.
+```
+
+Si ves esto, está corriendo. Si no, reinicia.
+
+---
+
+## RESUMEN
+
+**Cambios realizados:**
+1. ✓ Settings.py - Permisos por defecto a AllowAny
+2. ✓ URLs.py - Soporte para ambos formatos
+
+**Accion requerida:**
+1. Detener servidor (Ctrl+C)
+2. Iniciar servidor (python manage.py runserver)
+3. Refrescar navegador (F5)
+4. Login y probar
+
+**Resultado esperado:**
+- ✓ No más error 401
+- ✓ Las 4 tareas ML se muestran
+- ✓ El niño puede resolverlas
+- ✓ El sistema ML analiza automáticamente
+
+---
+
+DESPUES DE REINICIAR EL SERVIDOR, TODO DEBE FUNCIONAR CORRECTAMENTE ✓

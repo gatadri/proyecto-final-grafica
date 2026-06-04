@@ -1,26 +1,50 @@
-<h5 class="fw-bold mb-4"><i class="fas fa-tachometer-alt text-primary me-2"></i>Dashboard Profesor</h5>
+<h5 class="fw-bold mb-4" style="color: #FF8C42;"><i class="fas fa-tachometer-alt me-2"></i>Dashboard Profesor</h5>
 
-<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border" style="color: #4A90E2;"></div></div>
 
 <div *ngIf="!loading">
   <div class="row g-3 mb-4">
     <div class="col-md-3">
-      <app-stat-card icon="users" [value]="estudiantes.length" label="Estudiantes" color="primary"></app-stat-card>
+      <div class="card h-100 border-0" style="background: #4A90E2; color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+        <div class="card-body text-center">
+          <i class="fas fa-users fa-2x mb-2"></i>
+          <h2 class="fw-bold mb-1">{{ estudiantes.length }}</h2>
+          <p class="mb-0 small">Estudiantes</p>
+        </div>
+      </div>
     </div>
     <div class="col-md-3">
-      <app-stat-card icon="chart-line" [value]="promedioXP" label="Promedio XP" color="warning"></app-stat-card>
+      <div class="card h-100 border-0" style="background: #FF8C42; color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+        <div class="card-body text-center">
+          <i class="fas fa-chart-line fa-2x mb-2"></i>
+          <h2 class="fw-bold mb-1">{{ promedioXP }}</h2>
+          <p class="mb-0 small">Promedio XP</p>
+        </div>
+      </div>
     </div>
     <div class="col-md-3">
-      <app-stat-card icon="coins" [value]="totalMonedas" label="Monedas Totales" color="success"></app-stat-card>
+      <div class="card h-100 border-0" style="background: #FFA726; color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+        <div class="card-body text-center">
+          <i class="fas fa-coins fa-2x mb-2"></i>
+          <h2 class="fw-bold mb-1">{{ totalMonedas }}</h2>
+          <p class="mb-0 small">Monedas Totales</p>
+        </div>
+      </div>
     </div>
     <div class="col-md-3">
-      <app-stat-card icon="fire" [value]="rachaMax" label="Racha Máxima" color="danger"></app-stat-card>
+      <div class="card h-100 border-0" style="background: #4CAF50; color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+        <div class="card-body text-center">
+          <i class="fas fa-fire fa-2x mb-2"></i>
+          <h2 class="fw-bold mb-1">{{ rachaMax }}</h2>
+          <p class="mb-0 small">Racha Máxima</p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header fw-bold">
-      <i class="fas fa-users text-primary me-2"></i>Mis Estudiantes
+  <div class="card border-0" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+    <div class="card-header fw-bold" style="background: #4A90E2; color: white; border-radius: 12px 12px 0 0;">
+      <i class="fas fa-users me-2"></i>Mis Estudiantes
     </div>
     <div class="card-body">
       <div *ngIf="estudiantes.length === 0" class="text-center py-4 text-muted">
@@ -29,15 +53,15 @@
       </div>
       <div class="row g-3">
         <div *ngFor="let e of estudiantes" class="col-md-6">
-          <div class="card border-start border-primary border-3">
+          <div class="card border-0" style="border-left: 4px solid #4A90E2 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.08); border-radius: 8px;">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
                   <h6 class="mb-1">{{ e.nombre }} {{ e.apellido }}</h6>
                   <div class="d-flex gap-2">
-                    <span class="badge bg-warning">{{ e.monedas }} monedas</span>
-                    <span class="badge bg-info">Nivel {{ e.nivel }}</span>
-                    <span class="badge bg-success">{{ e.experiencia }} XP</span>
+                    <span class="badge" style="background-color: #FFA726; color: white;">{{ e.monedas }} monedas</span>
+                    <span class="badge" style="background-color: #4A90E2; color: white;">Nivel {{ e.nivel }}</span>
+                    <span class="badge" style="background-color: #4CAF50; color: white;">{{ e.experiencia }} XP</span>
                   </div>
                 </div>
                 <img [src]="'/images/avatares/' + e.avatar + '.png'" width="45" height="45" class="rounded-circle border">

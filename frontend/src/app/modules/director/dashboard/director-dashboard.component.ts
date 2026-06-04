@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
 import { MockDataService } from '../../../core/services/mock-data.service';
 
 @Component({
   selector: 'app-director-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, StatCardComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './director-dashboard.component.html'
 })
 export class DirectorDashboardComponent implements OnInit {

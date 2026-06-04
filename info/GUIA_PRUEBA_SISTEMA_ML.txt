@@ -1,0 +1,314 @@
+# GUIA COMPLETA - PRUEBA DEL SISTEMA ML
+
+## TAREAS CREADAS
+
+Se han creado 4 tareas de prueba con ejercicios de matematicas:
+
+### Tarea 1: Practica de Multiplicacion (ID: 11)
+- 12 ejercicios de multiplicacion
+- Ejemplos: "4 x 11 = ?", "4 x 12 = ?", "4 x 7 = ?"
+- Asignada a 7 ninos
+
+### Tarea 2: Practica de Division (ID: 12)
+- 12 ejercicios de division
+- Ejemplos: "14 dividido 2 = ?", "40 dividido 8 = ?", "55 dividido 5 = ?"
+- Asignada a 7 ninos
+
+### Tarea 3: Practica de Suma de Fracciones (ID: 13)
+- 12 ejercicios de fracciones
+- Ejemplos: "2/4 + 2/4 = ?", "3/5 + 4/5 = ?", "1/3 + 2/3 = ?"
+- Asignada a 7 ninos
+
+### Tarea 4: Practica Mixta de Matematicas (ID: 14)
+- 15 ejercicios variados
+- Mezcla de multiplicacion, division y fracciones
+- Asignada a 7 ninos
+
+---
+
+## COMO PROBAR EL SISTEMA
+
+### OPCION 1: Simulacion Automatica (Recomendado)
+
+Esta es la forma mas rapida de ver todo el sistema en accion.
+
+1. Inicia el servidor Django:
+```bash
+cd backend
+python manage.py runserver
+```
+
+2. En otra terminal, ejecuta la simulacion:
+```bash
+cd backend
+python simular_prueba_ml.py
+```
+
+La simulacion hara lo siguiente:
+- Simulara un nino resolviendo 12 ejercicios
+- Los primeros 3 ejercicios: concentrado (pocos errores)
+- Ejercicios 4-7: empezando a distraerse
+- Ejercicios 8-12: muy distraido (muchos errores)
+- Enviara cada respuesta al ML para analisis
+- Mostrara cuando se detecta distraccion
+- Generara reporte de errores
+- Mostrara estadisticas
+- Preparara notificaciones para padre/profesor
+
+---
+
+### OPCION 2: Prueba Manual con Postman/curl
+
+#### 1. Ver tareas disponibles del nino
+```
+GET http://localhost:8000/api/tareas/nino/tareas?nino_id=17
+```
+
+#### 2. Ver una tarea especifica
+```
+GET http://localhost:8000/api/tareas/nino/tareas/11?nino_id=17
+```
+
+Respuesta incluye todos los ejercicios con sus opciones.
+
+#### 3. Analizar una respuesta (simular que el nino respondio)
+```
+POST http://localhost:8000/api/tareas/ml/analizar-respuesta
+Content-Type: application/json
+
+{
+  "nino_id": 17,
+  "ejercicio_id": 1,
+  "tiempo_ms": 15000,
+  "correcto": false,
+  "tab_blur_count": 3,
+  "idle_ms": 5000,
+  "erratic_clicks": 8
+}
+```
+
+Respuesta:
+```json
+{
+  "prediccion": {
+    "error_type": "multiplicacion",
+    "prob_mistake_next": 0.85
+  },
+  "distraccion": {
+    "requiere_descanso": true,
+    "focus_score": 0.35
+  }
+}
+```
+
+Si `requiere_descanso: true`, el frontend debe mostrar la pantalla de descanso.
+
+#### 4. Repetir paso 3 para varios ejercicios
+
+Repite el paso 3 cambiando los valores:
+- `ejercicio_id`: 1, 2, 3, 4, etc.
+- `tiempo_ms`: varia el tiempo (3000-20000)
+- `correcto`: true o false
+- `tab_blur_count`: 0-6 (cuantas veces cambio de pestana)
+- `idle_ms`: 0-8000 (tiempo inactivo)
+- `erratic_clicks`: 0-12 (clicks fuera de elementos)
+
+**NOTA:** El ML necesita minimo 3 respuestas para detectar distracciones.
+
+#### 5. Ver reporte de errores
+```
+GET http://localhost:8000/api/tareas/ml/reporte-errores?nino_id=17
+```
+
+Muestra:
+- Tipos de errores detectados
+- Cantidad de cada tipo
+- Probabilidad promedio
+
+#### 6. Ver estadisticas completas
+```
+GET http://localhost:8000/api/tareas/ml/estadisticas?nino_id=17
+```
+
+Muestra:
+- Focus promedio
+- Total de distracciones
+- Errores por tipo
+- Ultimos eventos
+
+#### 7. Notificar a padre y profesor
+```
+POST http://localhost:8000/api/tareas/ml/notificar
+Content-Type: application/json
+
+{
+  "nino_id": 17
+}
+```
+
+Prepara notificaciones con:
+- Email del padre
+- Email del profesor
+- Lista de temas que necesita reforzar
+
+---
+
+### OPCION 3: Desde el Frontend Angular
+
+Si ya tienes el frontend integrado:
+
+1. El nino inicia sesion
+2. Selecciona una de las tareas (ID: 11, 12, 13 o 14)
+3. Resuelve los ejercicios normalmente
+4. El sistema automaticamente:
+   - Captura tiempo de respuesta
+   - Detecta cambios de pestana
+   - Mide tiempo inactivo
+   - Cuenta clicks erraticos
+   - Envia todo al ML
+   - Muestra pantalla de descanso si es necesario
+
+---
+
+## QUE VER EN LA BASE DE DATOS
+
+### Tabla: tareas_prediccionerror
+
+```sql
+SELECT * FROM tareas_prediccionerror WHERE nino_id = 17;
+```
+
+Veras:
+- tipo_error: multiplicacion, division, fracciones, etc.
+- probabilidad: 0.0 a 1.0
+- fecha_prediccion
+- notificado: si se notifico al padre/profesor
+
+### Tabla: tareas_eventodistruccion
+
+```sql
+SELECT * FROM tareas_eventodistruccion WHERE nino_id = 17;
+```
+
+Veras:
+- focus_score: 0.0 a 1.0 (menor = mas distraido)
+- tab_blur_count: cambios de pestana
+- idle_ms: tiempo inactivo
+- erratic_clicks: clicks erraticos
+- descanso_mostrado: si se mostro la pantalla
+
+---
+
+## INTERPRETACION DE RESULTADOS
+
+### Focus Score
+- **0.8 - 1.0**: Muy concentrado
+- **0.6 - 0.8**: Concentracion normal
+- **0.4 - 0.6**: Empezando a distraerse
+- **< 0.4**: Muy distraido (se muestra descanso)
+
+### Tipos de Error
+- **multiplicacion**: Errores en ejercicios de multiplicacion
+- **division**: Errores en ejercicios de division
+- **fracciones**: Errores en ejercicios de fracciones
+- **procedimiento**: Error en el procedimiento
+- **inatencion**: Error por falta de atencion
+- **conceptual**: No entiende el concepto
+
+### Indicadores de Distraccion
+- **tab_blur_count > 3**: Cambia mucho de pestana
+- **idle_ms > 5000**: Demasiado tiempo inactivo
+- **erratic_clicks > 8**: Muchos clicks sin sentido
+- **tiempo_ms muy alto o muy bajo**: Responde sin pensar o tarda mucho
+
+---
+
+## DATOS DE PRUEBA
+
+### Ninos disponibles:
+1. Alejandra (ID: 17) - Padre: jose@correo.com
+2. Carla (ID: 18)
+3. Miguel (ID: 21)
+4. Luis Mamani (ID: 23)
+5. Ana Mamani (ID: 24)
+6. Elena Flores (ID: 26)
+7. Carlos Luna (ID: 30)
+
+### Tareas disponibles:
+1. Practica de Multiplicacion (ID: 11)
+2. Practica de Division (ID: 12)
+3. Practica de Suma de Fracciones (ID: 13)
+4. Practica Mixta de Matematicas (ID: 14)
+
+---
+
+## EJEMPLO DE FLUJO COMPLETO
+
+```bash
+# Terminal 1: Iniciar servidor
+cd backend
+python manage.py runserver
+
+# Terminal 2: Ejecutar simulacion
+cd backend
+python simular_prueba_ml.py
+```
+
+La simulacion mostrara:
+
+1. Carga de la tarea
+2. Por cada ejercicio:
+   - Pregunta y opciones
+   - Datos enviados al ML
+   - Prediccion de error (si hay)
+   - Analisis de concentracion
+   - Si requiere descanso
+3. Reporte final de errores
+4. Estadisticas ML
+5. Notificaciones preparadas
+
+---
+
+## ARCHIVOS IMPORTANTES
+
+### Backend:
+- `backend/generar_tareas_ml.py` - Genera las tareas
+- `backend/simular_prueba_ml.py` - Simula prueba completa
+- `backend/tareas/views.py` - Endpoints del ML
+- `backend/tareas/ml_utils.py` - Logica del ML
+
+### Frontend:
+- `frontend/src/app/components/pantalla-descanso.component.ts`
+- `frontend/src/app/services/ml.service.ts`
+- `frontend/src/app/components/ejercicios-ml-example.component.ts`
+
+### Modelos ML:
+- `ml/models/ffn_model.h5` - Prediccion de errores
+- `ml/models/rnn_model.h5` - Deteccion de distracciones
+- `ml/models/scaler.pkl` - Normalizacion
+- `ml/models/encoder.pkl` - Codificacion de tipos
+
+---
+
+## PROXIMOS PASOS
+
+1. Ejecuta la simulacion: `python simular_prueba_ml.py`
+2. Revisa los resultados en la base de datos
+3. Prueba manualmente con Postman
+4. Integra en tu frontend Angular
+5. Ajusta umbrales si es necesario (en ml_utils.py)
+
+---
+
+## SOPORTE
+
+Si algo no funciona:
+
+1. Verifica que el servidor este corriendo
+2. Revisa que las tareas se hayan creado
+3. Confirma que hay ninos en la BD
+4. Ejecuta: `python inicializar_sistema_ml.py`
+
+---
+
+TODO LISTO PARA PROBAR! 🚀

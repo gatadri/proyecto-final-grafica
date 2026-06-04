@@ -1,4 +1,4 @@
-<div class="container-fluid py-4">
+<div class="container-fluid py-4" style="background: linear-gradient(135deg, #FFD4A3 0%, #B3E0FF 100%); min-height: 100vh;">
   <div class="row justify-content-center">
     <div class="col-lg-11">
       
@@ -6,7 +6,7 @@
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h3 class="fw-bold mb-1">
-            <i class="fas fa-trophy text-warning me-2"></i>Mis Logros
+            <i class="fas fa-trophy me-2" style="color: #FFA500;"></i>Mis Logros
           </h3>
           <p class="text-muted mb-0">Desbloquea logros completando desafíos</p>
         </div>
@@ -30,7 +30,7 @@
           <div class="col-md-3 col-6">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body text-center">
-                <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                <i class="fas fa-check-circle fa-2x mb-2" style="color: #A5D6A7;"></i>
                 <h4 class="fw-bold mb-0">{{ logrosObtenidos.length }}</h4>
                 <small class="text-muted">Desbloqueados</small>
               </div>
@@ -48,7 +48,7 @@
           <div class="col-md-3 col-6">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body text-center">
-                <i class="fas fa-percentage fa-2x text-primary mb-2"></i>
+                <i class="fas fa-percentage fa-2x mb-2" style="color: #87CEEB;"></i>
                 <h4 class="fw-bold mb-0">{{ logros.length > 0 ? ((logrosObtenidos.length / logros.length) * 100).toFixed(0) : 0 }}%</h4>
                 <small class="text-muted">Completado</small>
               </div>
@@ -57,7 +57,7 @@
           <div class="col-md-3 col-6">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body text-center">
-                <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                <i class="fas fa-coins fa-2x mb-2" style="color: #FFA500;"></i>
                 <h4 class="fw-bold mb-0">{{ nino?.monedas || 0 }}</h4>
                 <small class="text-muted">Monedas</small>
               </div>
@@ -128,7 +128,7 @@
 
                   <!-- Recompensa -->
                   <div class="text-center mt-3 pt-3 border-top">
-                    <span class="badge bg-warning text-dark">
+                    <span class="badge text-dark" style="background: #FFD4A3;">
                       <i class="fas fa-coins me-1"></i>+{{ logro.puntos_bonus }} monedas
                     </span>
                   </div>

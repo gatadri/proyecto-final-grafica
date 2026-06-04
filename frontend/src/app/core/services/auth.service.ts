@@ -37,6 +37,11 @@ export class AuthService {
   ninoLogin(nombre: string, pin: string): Observable<NinoLoginResponse> {
     return this.http.post<NinoLoginResponse>(`${this.apiUrl}/nino/login`, { nombre, pin }).pipe(
       tap(res => {
+        // Limpiar sesión de usuario anterior si existe
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        this.userSubject.next(null);
+        
         localStorage.setItem('nino', JSON.stringify(res.nino));
         this.ninoSubject.next(res.nino);
       })

@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('users.urls')),
     path('api/', include('tareas.urls')),
+    path('api/tareas/', include('tareas.urls')),  # Soporte para ambos formatos
 ]
 
 # Servir archivos media en desarrollo

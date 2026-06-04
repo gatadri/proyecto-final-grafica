@@ -1,0 +1,85 @@
+# SOLUCION - BLOQUEO AL EQUIVOCARSE EN EJERCICIOS
+
+## PROBLEMA
+Cuando el niño se equivocaba en el primer intento, podía seleccionar otra opción pero NO podía enviarla. El botón "Confirmar Respuesta" quedaba bloqueado.
+
+## CAUSA
+El código original solo manejaba dos casos:
+1. Respuesta correcta → avanzar al siguiente ejercicio
+2. Segundo intento fallido → avanzar al siguiente ejercicio
+
+NO había código para manejar el caso de primer intento incorrecto, lo que causaba que el feedback quedara activo y bloqueara el botón.
+
+## SOLUCION APLICADA
+
+Se agregó un bloque `else` en la función `responder()` para manejar el primer intento incorrecto:
+
+```typescript
+if (correcto || this.intentos >= 2) {
+  // Avanzar al siguiente ejercicio
+  ...
+} else {
+  // Primer intento incorrecto - permitir segundo intento
+  setTimeout(() => {
+    this.feedback = null;
+    this.respuestaSeleccionada = '';
+  }, 1500);
+}
+```
+
+## COMO FUNCIONA AHORA
+
+### Flujo corregido:
+
+1. **Niño selecciona respuesta incorrecta (primer intento)**
+   - Se muestra mensaje: "Intenta de nuevo"
+   - Espera 1.5 segundos
+   - Limpia el feedback
+   - Limpia la selección
+   - El niño puede seleccionar otra opción
+   - El botón se habilita al seleccionar
+
+2. **Niño selecciona respuesta correcta**
+   - Se muestra mensaje: "¡Correcto! +10 puntos" (o +5 si es segundo intento)
+   - Espera 1.5 segundos
+   - Avanza al siguiente ejercicio
+
+3. **Niño falla el segundo intento**
+   - Se muestra: "Incorrecto. La respuesta era: X"
+   - Espera 1.5 segundos
+   - Avanza al siguiente ejercicio (sin puntos)
+
+## ARCHIVO MODIFICADO
+
+`frontend/src/app/modules/nino/tarea/nino-tarea.component.ts`
+
+Líneas modificadas: ~67-71
+
+## PARA APLICAR EL CAMBIO
+
+1. El archivo ya está modificado
+2. Si el frontend está corriendo, se aplicará automáticamente (hot reload)
+3. Si no, refresca el navegador (F5)
+4. Prueba resolviendo un ejercicio y equivocándote en el primer intento
+
+## VERIFICACION
+
+1. Inicia sesión como niño
+2. Abre cualquier tarea ML
+3. Selecciona una respuesta INCORRECTA
+4. Espera a que aparezca "Intenta de nuevo"
+5. Espera 1.5 segundos
+6. AHORA deberías poder seleccionar otra opción
+7. El botón "Confirmar Respuesta" debe habilitarse
+8. Puedes enviar el segundo intento
+
+## COMPORTAMIENTO ESPERADO
+
+✓ Primer intento correcto → +10 puntos → Siguiente ejercicio
+✓ Primer intento incorrecto → "Intenta de nuevo" → Permitir segundo intento
+✓ Segundo intento correcto → +5 puntos → Siguiente ejercicio
+✓ Segundo intento incorrecto → Mostrar respuesta correcta → Siguiente ejercicio (0 puntos)
+
+---
+
+CAMBIO APLICADO - EL BLOQUEO ESTA SOLUCIONADO ✓

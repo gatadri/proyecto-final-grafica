@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import TareaListCreateView, TareaDetailView, EstudiantesProfesorView, NinoTareasView, NinoTareaDetailView, EjercicioProgresoView, CompletarTareaView, NinoProgresoView, NinoLogrosView, LogroListView, ProgresoPracticaView, EjercicioPracticaView, SkinsListView, ComprarSkinView, EquiparSkinView, StickersListView, ComprarStickerView, InventarioTiendaView, InventarioItemView
+from .views import TareaListCreateView, TareaDetailView, EstudiantesProfesorView, NinoTareasView, NinoTareaDetailView, EjercicioProgresoView, CompletarTareaView, NinoProgresoView, NinoLogrosView, LogroListView, ProgresoPracticaView, EjercicioPracticaView, SkinsListView, ComprarSkinView, EquiparSkinView, StickersListView, ComprarStickerView, InventarioTiendaView, InventarioItemView, AnalizarRespuestaView, ReporteErroresView, NotificarPadreProfesorView, EstadisticasMLView, ReporteDetalladoView
 
 urlpatterns = [
     path('tareas',                  TareaListCreateView.as_view()),
@@ -27,4 +27,11 @@ urlpatterns = [
     # Inventario (Profesor/Director)
     path('inventario/tienda',       InventarioTiendaView.as_view()),
     path('inventario/<str:tipo>/<int:pk>', InventarioItemView.as_view()),
+    
+    # ML - Predicción y análisis
+    path('ml/analizar-respuesta',   AnalizarRespuestaView.as_view()),
+    path('ml/reporte-errores',      ReporteErroresView.as_view()),
+    path('ml/reporte-detallado',    ReporteDetalladoView.as_view()),
+    path('ml/notificar',            NotificarPadreProfesorView.as_view()),
+    path('ml/estadisticas',         EstadisticasMLView.as_view()),
 ]

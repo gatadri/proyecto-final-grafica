@@ -35,14 +35,28 @@ export class UsuariosComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log('Componente inicializado');
+    console.log('Usuario actual:', this.auth.getUser());
+    console.log('Token:', this.auth.getToken());
     this.loadUsuarios();
     this.loadProfesores();
   }
 
   loadUsuarios(): void {
-    this.api.get<User[]>('usuarios').subscribe({
-      next: data => { this.usuarios = data; this.loading = false; },
-      error: () => this.loading = false
+    console.log('Cargando usuarios...');
+    this.loading = true;
+    this.api.get<any>('usuarios').subscribe({
+      next: data => { 
+        console.log('Usuarios cargados desde API:', data);
+        console.log('Tipo:', typeof data, 'Es Array:', Array.isArray(data));
+        this.usuarios = Array.isArray(data) ? data : [];
+        console.log('Total usuarios asignados:', this.usuarios.length);
+        this.loading = false; 
+      },
+      error: (err) => { 
+        console.error('Error cargando usuarios:', err);
+        this.loading = false;
+      }
     });
   }
 
@@ -56,6 +70,7 @@ export class UsuariosComponent implements OnInit {
   get hijos(): FormArray { return this.form.get('hijos') as FormArray; }
 
   getHijosNames(user: User): string {
+    if (!user.hijos || user.hijos.length === 0) return 'Sin hijos';
     return user.hijos.map(h => h.nombre + ' ' + h.apellido).join(', ');
   }
 

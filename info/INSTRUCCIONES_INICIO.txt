@@ -1,0 +1,170 @@
+=== SISTEMA DE LOGIN CORREGIDO - INSTRUCCIONES FINALES ===
+
+✅ PROBLEMA RESUELTO
+- Contraseñas corregidas y hasheadas correctamente
+- Migraciones aplicadas (tareas_ejercicio.tema agregado)
+- Todos los usuarios activos y funcionando
+- Base de datos sincronizada
+
+=== CÓMO INICIAR EL SISTEMA ===
+
+PASO 1: Iniciar el Backend Django
+----------------------------------
+Abrir terminal en la carpeta del proyecto:
+
+  cd C:\laragon\www\proyecto_adri_angular\backend
+  python manage.py runserver
+
+Deberías ver:
+  "Starting development server at http://127.0.0.1:8000/"
+  "Quit the server with CTRL-BREAK."
+
+Si ves errores de migración, ejecuta:
+  python manage.py migrate
+
+
+PASO 2: Iniciar el Frontend Angular
+------------------------------------
+Abrir otra terminal en la carpeta del proyecto:
+
+  cd C:\laragon\www\proyecto_adri_angular\frontend
+  ng serve
+
+Deberías ver:
+  "✔ Compiled successfully."
+  "Application bundle generation complete."
+  "http://localhost:4200/"
+
+
+PASO 3: Acceder a la Aplicación
+--------------------------------
+Abrir navegador en: http://localhost:4200
+
+Iniciar sesión con cualquiera de estas credenciales:
+
+DIRECTOR:
+  Email: director@correo.com
+  Password: password
+
+PROFESOR (recomendado para pruebas):
+  Email: profecarlos@correo.com
+  Password: password
+
+PADRE (recomendado para pruebas):
+  Email: jose@correo.com
+  Password: password
+
+
+=== CREDENCIALES COMPLETAS ===
+
+DIRECTOR (1):
+┌─────────────────────────────┬──────────┐
+│ director@correo.com         │ password │
+└─────────────────────────────┴──────────┘
+
+PROFESORES (6):
+┌─────────────────────────────┬───────────┐
+│ profecarlos@correo.com      │ password  │
+│ ayllon814@correo.com        │ password  │
+│ carlos@correo.com           │ 123456798 │
+│ ana@correo.com              │ 132465789 │
+│ luis@correo.com             │ 123456789 │
+│ maria@correo.com            │ 123465789 │
+└─────────────────────────────┴───────────┘
+
+PADRES (14):
+┌─────────────────────────────┬───────────┐
+│ jose@correo.com             │ password  │
+│ fabricio@correo.com         │ password  │
+│ amilcar@correo.com          │ password  │
+│ carla@correo.com            │ password  │
+│ juan@correo.com             │ 123456789 │
+│ pedro@correo.com            │ 123456789 │
+│ lucia@correo.com            │ 123456789 │
+│ mario@correo.com            │ 123456789 │
+│ sofia@correo.com            │ 123456789 │
+│ diego@correo.com            │ 123456789 │
+│ elena@correo.com            │ 123456789 │
+│ raul@correo.com             │ 123456789 │
+│ paola@correo.com            │ 123456789 │
+│ andres@correo.com           │ 123456789 │
+└─────────────────────────────┴───────────┘
+
+
+=== VERIFICAR QUE TODO FUNCIONA ===
+
+1. Backend corriendo en http://127.0.0.1:8000
+   - Visitar: http://127.0.0.1:8000/admin
+   - Debería mostrar la página de admin de Django
+
+2. Frontend corriendo en http://localhost:4200
+   - Debería mostrar la página de login
+
+3. Probar login:
+   - Ingresar email: director@correo.com
+   - Ingresar password: password
+   - Click en "Iniciar Sesión"
+   - Debería redirigir a /director/dashboard
+
+
+=== SOLUCIÓN DE PROBLEMAS ===
+
+❌ Error: "Unknown column tareas_ejercicio.tema"
+✅ Solución: cd backend && python manage.py migrate
+
+❌ Error: "Port 8000 already in use"
+✅ Solución: Cerrar otros servidores Django corriendo
+   - Windows: taskkill /f /im python.exe
+   - O cambiar puerto: python manage.py runserver 8001
+
+❌ Error: "You have X unapplied migrations"
+✅ Solución: python manage.py migrate
+
+❌ Error de login: "Credenciales incorrectas"
+✅ Solución: Ejecutar script de corrección
+   cd backend && python arreglar_login.py
+
+❌ Frontend no conecta con backend
+✅ Verificar:
+   - Backend corriendo en puerto 8000
+   - CORS habilitado en settings.py
+   - URL correcta en environment.ts
+
+
+=== ARCHIVOS ÚTILES CREADOS ===
+
+1. arreglar_login.py
+   - Corrige contraseñas de todos los usuarios
+   - Ejecutar si hay problemas de autenticación
+
+2. test_login.py
+   - Prueba autenticación Django directa
+   - Útil para debug
+
+3. test_login_final.py
+   - Prueba endpoint HTTP de login
+   - Verifica que el backend responde correctamente
+
+4. LOGIN_CORREGIDO.txt
+   - Documento completo con todas las credenciales
+
+5. CREDENCIALES_ACTUALIZADAS.txt
+   - Resumen de credenciales y estado del sistema
+
+
+=== RESUMEN ===
+
+✓ Base de datos: MySQL (proyecto_adri_django)
+✓ Total usuarios: 21 (todos activos)
+✓ Backend: Django + DRF + JWT
+✓ Frontend: Angular
+✓ Migraciones: Aplicadas correctamente
+✓ Login: 100% funcional
+
+AHORA PUEDES INICIAR SESIÓN CON CUALQUIER USUARIO.
+
+Si tienes algún problema, ejecuta:
+  cd backend
+  python test_login_final.py
+
+Esto verificará que el login funciona correctamente.

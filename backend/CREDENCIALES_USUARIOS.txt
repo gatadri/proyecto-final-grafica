@@ -2,7 +2,7 @@
 
 DIRECTOR:
 - Email: director@correo.com
-- Password: (la que ya tenías configurada)
+- Password: password
 
 PROFESORES:
 1. Email: profecarlos@correo.com | Password: (la que ya tenías configurada)

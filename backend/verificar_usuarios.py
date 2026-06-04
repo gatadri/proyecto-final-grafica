@@ -1,3 +1,6 @@
+"""
+Script para verificar usuarios existentes en la base de datos
+"""
 import os
 import django
 
@@ -5,22 +8,30 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend_django.settings')
 django.setup()
 
 from users.models import User
-from tareas.models import Nino
 
-print('=== PADRES Y SUS HIJOS ===\n')
-padres = User.objects.filter(role='padre')
-for p in padres:
-    print(f'{p.nombre} {p.apellido} ({p.email}):')
-    hijos = p.hijos.all()
-    if hijos.exists():
-        for h in hijos:
-            prof = h.profesor.nombre + ' ' + h.profesor.apellido if h.profesor else 'Sin profesor'
-            print(f'  - {h.nombre} {h.apellido} (PIN: {h.pin}, Profesor: {prof})')
-    else:
-        print('  Sin hijos registrados')
-    print()
+print("="*70)
+print("VERIFICACIÓN DE USUARIOS EN LA BASE DE DATOS")
+print("="*70)
 
-print('\n=== TODOS LOS USUARIOS ===\n')
 usuarios = User.objects.all()
-for u in usuarios:
-    print(f'{u.nombre} {u.apellido} | Email: {u.email} | Role: {u.role} | Activo: {u.activo}')
+
+print(f"\nTotal de usuarios: {usuarios.count()}")
+print("\nListado de usuarios:")
+print("-"*70)
+
+for user in usuarios:
+    print(f"ID: {user.id}")
+    print(f"Nombre: {user.nombre} {user.apellido}")
+    print(f"Email: {user.email}")
+    print(f"Rol: {user.role}")
+    print(f"Activo: {user.activo}")
+    if user.role == 'padre':
+        hijos = user.hijos.all()
+        print(f"Hijos: {hijos.count()}")
+        for hijo in hijos:
+            print(f"  - {hijo.nombre} {hijo.apellido}")
+    print("-"*70)
+
+if usuarios.count() == 0:
+    print("\n⚠️  No hay usuarios en la base de datos.")
+    print("   Ejecuta 'python crear_usuarios_demo.py' para crear usuarios de prueba.")

@@ -1,0 +1,126 @@
+/* ============================================
+   PALETA PROFESIONAL NARANJA-AZUL
+   Para interfaces de Profesor, Padre y Director
+   ============================================ */
+
+:root {
+  /* Colores principales naranja (más fuertes que el niño) */
+  --prof-orange-primary: #FF8C42;
+  --prof-orange-dark: #FF6B1A;
+  --prof-orange-light: #FFB366;
+  --prof-orange-pale: #FFD4A3;
+  
+  /* Colores principales azul (más fuertes que el niño) */
+  --prof-blue-primary: #4A90E2;
+  --prof-blue-dark: #2E5C8A;
+  --prof-blue-light: #6FB1FF;
+  --prof-blue-pale: #B3E0FF;
+  
+  /* Colores de estado profesionales */
+  --prof-success: #4CAF50;
+  --prof-success-light: #81C784;
+  --prof-danger: #E53935;
+  --prof-danger-light: #EF5350;
+  --prof-warning: #FFA726;
+  --prof-warning-light: #FFB74D;
+  --prof-info: #29B6F6;
+  --prof-info-light: #4FC3F7;
+  
+  /* Colores de fondo */
+  --prof-bg-card: #FFFFFF;
+  --prof-bg-light: #F8F9FA;
+  
+  /* Sombras profesionales */
+  --prof-shadow-sm: 0 2px 4px rgba(0,0,0,0.08);
+  --prof-shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+  --prof-shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+/* Colores sólidos para elementos principales */
+.prof-solid-orange {
+  background: #FF8C42;
+}
+
+.prof-solid-blue {
+  background: #4A90E2;
+}
+
+.prof-solid-mixed {
+  background: #4A90E2;
+}
+
+/* Utilidades de color */
+.prof-text-orange { color: var(--prof-orange-primary) !important; }
+.prof-text-blue { color: var(--prof-blue-primary) !important; }
+.prof-bg-orange { background-color: var(--prof-orange-primary) !important; }
+.prof-bg-blue { background-color: var(--prof-blue-primary) !important; }
+
+/* Botones profesionales */
+.prof-btn-orange {
+  background: #FF8C42;
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.prof-btn-orange:hover {
+  background: #E67932;
+  transform: translateY(-1px);
+  box-shadow: var(--prof-shadow-md);
+}
+
+.prof-btn-blue {
+  background: #4A90E2;
+  border: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.prof-btn-blue:hover {
+  background: #2E5C8A;
+  transform: translateY(-1px);
+  box-shadow: var(--prof-shadow-md);
+}
+
+/* Tarjetas estadísticas profesionales */
+.prof-stat-card {
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--prof-shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.prof-stat-card:hover {
+  box-shadow: var(--prof-shadow-md);
+  transform: translateY(-2px);
+}
+
+.prof-stat-card.orange {
+  background: #FF8C42;
+  color: white;
+}
+
+.prof-stat-card.blue {
+  background: #4A90E2;
+  color: white;
+}
+
+/* Badges profesionales */
+.prof-badge-orange {
+  background-color: var(--prof-orange-primary);
+  color: white;
+}
+
+.prof-badge-blue {
+  background-color: var(--prof-blue-primary);
+  color: white;
+}
+
+/* Progress bars profesionales */
+.prof-progress-orange .progress-bar {
+  background: #FF8C42;
+}
+
+.prof-progress-blue .progress-bar {
+  background: #4A90E2;
+}

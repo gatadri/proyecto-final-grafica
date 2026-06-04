@@ -1,14 +1,14 @@
-<h5 class="fw-bold mb-4"><i class="fas fa-tasks text-primary me-2"></i>Mis Tareas</h5>
+<h5 class="fw-bold mb-4" style="color: #FF8C42;"><i class="fas fa-tasks me-2"></i>Mis Tareas</h5>
 
 <div class="mb-3" *ngIf="!showForm">
-  <button class="btn btn-primary" (click)="openCreate()">
+  <button class="btn" style="background: #4A90E2; color: white; border: none; padding: 10px 20px; border-radius: 8px;" (click)="openCreate()">
     <i class="fas fa-plus me-1"></i> Nueva Tarea
   </button>
 </div>
 
 <!-- Formulario -->
-<div class="card mb-4" *ngIf="showForm">
-  <div class="card-header fw-bold">{{ editando ? 'Editar Tarea' : 'Nueva Tarea' }}</div>
+<div class="card mb-4 border-0" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);" *ngIf="showForm">
+  <div class="card-header fw-bold" style="background: #4A90E2; color: white; border-radius: 12px 12px 0 0;">{{ editando ? 'Editar Tarea' : 'Nueva Tarea' }}</div>
   <div class="card-body">
     <form [formGroup]="form" (ngSubmit)="save()">
 
@@ -58,17 +58,19 @@
       <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <label class="form-label mb-0 fw-bold">Ejercicios</label>
-          <button type="button" class="btn btn-sm btn-outline-primary" (click)="agregarEjercicio()">
+          <div class="mb-2">
+            <button type="button" class="btn btn-sm" style="background: #4A90E2; color: white; border: none;" (click)="agregarEjercicio()">
             <i class="fas fa-plus"></i> Agregar ejercicio
           </button>
         </div>
+      </div>
 
         <div formArrayName="ejercicios">
           <div *ngFor="let ej of ejercicios.controls; let i = index" [formGroupName]="i"
                class="border rounded p-3 mb-2 bg-light">
             <div class="d-flex justify-content-between mb-2">
-              <strong>Ejercicio {{ i + 1 }}</strong>
-              <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarEjercicio(i)">
+              <strong style="color: #FF8C42;">Ejercicio {{ i + 1 }}</strong>
+              <button type="button" class="btn btn-sm" style="background-color: #E53935; color: white; border: none;" (click)="eliminarEjercicio(i)">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -92,7 +94,7 @@
       <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success" [disabled]="saving || form.invalid">
+        <button type="submit" class="btn" style="background: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 8px;" [disabled]="saving || form.invalid">
           <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
           Guardar
         </button>
@@ -104,9 +106,9 @@
 </div>
 
 <!-- Lista -->
-<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border" style="color: #4A90E2;"></div></div>
 
-<div *ngIf="!loading" class="card">
+<div *ngIf="!loading" class="card border-0" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
   <div class="card-body">
     <div *ngIf="tareas.length === 0" class="text-center py-4 text-muted">
       <i class="fas fa-tasks fa-3x mb-3"></i><p>No hay tareas creadas</p>
@@ -119,14 +121,14 @@
         <tbody>
           <tr *ngFor="let t of tareas">
             <td><strong>{{ t.titulo }}</strong><br><small class="text-muted">{{ t.descripcion }}</small></td>
-            <td><span class="badge bg-info">{{ t.tipo_ejercicio }}</span></td>
+            <td><span class="badge" style="background-color: #4A90E2; color: white;">{{ t.tipo_ejercicio }}</span></td>
             <td>{{ t.ejercicios?.length ?? 0 }}</td>
             <td><small>{{ getNombresNinos(t.nino_ids) || 'Sin asignar' }}</small></td>
             <td>
-              <button (click)="openEdit(t)" class="btn btn-sm btn-outline-primary me-1">
+              <button (click)="openEdit(t)" class="btn btn-sm me-1" style="background-color: #4A90E2; color: white; border: none;">
                 <i class="fas fa-edit"></i>
               </button>
-              <button (click)="eliminar(t.id)" class="btn btn-sm btn-outline-danger">
+              <button (click)="eliminar(t.id)" class="btn btn-sm" style="background-color: #E53935; color: white; border: none;">
                 <i class="fas fa-trash"></i>
               </button>
             </td>

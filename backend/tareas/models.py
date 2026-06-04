@@ -46,6 +46,8 @@ class Ejercicio(models.Model):
     respuesta_correcta = models.CharField(max_length=200)
     explicacion        = models.TextField(blank=True)
     orden              = models.IntegerField(default=0)
+    tema               = models.CharField(max_length=100, blank=True, help_text='Ej: tabla_11, tabla_8, suma_fracciones')
+    subtema            = models.CharField(max_length=100, blank=True, help_text='Ej: multiplicacion, fracciones, division')
 
     class Meta:
         ordering = ['orden']
@@ -227,3 +229,56 @@ class StickerComprado(models.Model):
 
     def __str__(self):
         return f'{self.nino.nombre} - {self.sticker.nombre}'
+
+
+class PrediccionError(models.Model):
+    TIPOS_ERROR = [
+        ('fracciones', 'Fracciones'),
+        ('multiplicacion', 'Multiplicación'),
+        ('division', 'División'),
+        ('algebra', 'Álgebra'),
+        ('geometria', 'Geometría'),
+        ('procedimiento', 'Procedimiento'),
+        ('conceptual', 'Conceptual'),
+        ('inatencion', 'Inatencion'),
+        ('consigna', 'Consigna'),
+        ('aleatorio', 'Aleatorio'),
+    ]
+    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, related_name='predicciones')
+    tipo_error = models.CharField(max_length=50, choices=TIPOS_ERROR)
+    probabilidad = models.FloatField()
+    fecha_prediccion = models.DateTimeField(auto_now_add=True)
+    notificado = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.nino.nombre} - {self.tipo_error} ({self.probabilidad:.2f})'
+
+
+class EventoDistraccion(models.Model):
+    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, related_name='eventos_distraccion')
+    focus_score = models.FloatField()
+    tab_blur_count = models.IntegerField()
+    idle_ms = models.IntegerField()
+    erratic_clicks = models.IntegerField()
+    fecha_evento = models.DateTimeField(auto_now_add=True)
+    descanso_mostrado = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.nino.nombre} - Focus: {self.focus_score:.2f}'
+
+
+class AnalisisErrorTema(models.Model):
+    nino = models.ForeignKey(Nino, on_delete=models.CASCADE, related_name='analisis_temas')
+    tarea = models.ForeignKey(Tarea, on_delete=models.CASCADE, related_name='analisis_temas')
+    tema = models.CharField(max_length=100)
+    subtema = models.CharField(max_length=100)
+    cantidad_errores = models.IntegerField(default=0)
+    cantidad_aciertos = models.IntegerField(default=0)
+    tiempo_promedio_ms = models.IntegerField(default=0)
+    fecha_analisis = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('nino', 'tarea', 'tema')
+
+    def __str__(self):
+        return f'{self.nino.nombre} - {self.tema} ({self.cantidad_errores} errores)'

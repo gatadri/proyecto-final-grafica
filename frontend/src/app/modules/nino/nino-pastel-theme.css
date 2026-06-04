@@ -1,0 +1,339 @@
+/* Paleta de Colores Pastel para Niño */
+:root {
+  /* Naranjas Pastel */
+  --pastel-orange-light: #FFE4C4;
+  --pastel-orange: #FFD4A3;
+  --pastel-orange-medium: #FFB88C;
+  --pastel-orange-dark: #FF9B76;
+  --pastel-peach: #FFDAB9;
+  
+  /* Azules Pastel */
+  --pastel-blue-light: #E0F4FF;
+  --pastel-blue: #B3E0FF;
+  --pastel-blue-medium: #87CEEB;
+  --pastel-blue-dark: #6BB6E0;
+  --pastel-sky: #D4E9F7;
+  
+  /* Colores Complementarios Pastel */
+  --pastel-pink: #FFD1DC;
+  --pastel-yellow: #FFF9C4;
+  --pastel-green: #C8E6C9;
+  --pastel-purple: #E1BEE7;
+  --pastel-mint: #C7ECEE;
+  
+  /* Neutros Suaves */
+  --pastel-white: #FFFEF9;
+  --pastel-cream: #FFF8E7;
+  --pastel-gray-light: #F5F5F5;
+  --pastel-gray: #E8E8E8;
+  
+  /* Gradientes */
+  --gradient-warm: linear-gradient(135deg, #FFD4A3 0%, #FFB88C 50%, #FF9B76 100%);
+  --gradient-cool: linear-gradient(135deg, #B3E0FF 0%, #87CEEB 50%, #6BB6E0 100%);
+  --gradient-mixed: linear-gradient(135deg, #FFD4A3 0%, #B3E0FF 100%);
+  --gradient-soft: linear-gradient(135deg, #FFDAB9 0%, #D4E9F7 100%);
+}
+
+/* Estilos Globales para Niño */
+.nino-container {
+  background: var(--gradient-soft);
+  min-height: 100vh;
+}
+
+/* Tarjetas Pastel */
+.card-pastel {
+  background: var(--pastel-white);
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(255, 180, 140, 0.15);
+  transition: all 0.3s ease;
+}
+
+.card-pastel:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(255, 180, 140, 0.25);
+}
+
+/* Botones Pastel */
+.btn-pastel-orange {
+  background: var(--gradient-warm);
+  border: none;
+  color: #fff;
+  border-radius: 15px;
+  padding: 12px 24px;
+  font-weight: 600;
+  box-shadow: 0 4px 8px rgba(255, 155, 118, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-pastel-orange:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(255, 155, 118, 0.4);
+  filter: brightness(1.05);
+}
+
+.btn-pastel-blue {
+  background: var(--gradient-cool);
+  border: none;
+  color: #fff;
+  border-radius: 15px;
+  padding: 12px 24px;
+  font-weight: 600;
+  box-shadow: 0 4px 8px rgba(107, 182, 224, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-pastel-blue:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(107, 182, 224, 0.4);
+  filter: brightness(1.05);
+}
+
+.btn-pastel-outline-orange {
+  background: transparent;
+  border: 3px solid var(--pastel-orange-dark);
+  color: var(--pastel-orange-dark);
+  border-radius: 15px;
+  padding: 10px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-pastel-outline-orange:hover {
+  background: var(--pastel-orange-light);
+  border-color: var(--pastel-orange-dark);
+  color: var(--pastel-orange-dark);
+}
+
+.btn-pastel-outline-blue {
+  background: transparent;
+  border: 3px solid var(--pastel-blue-dark);
+  color: var(--pastel-blue-dark);
+  border-radius: 15px;
+  padding: 10px 24px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-pastel-outline-blue:hover {
+  background: var(--pastel-blue-light);
+  border-color: var(--pastel-blue-dark);
+  color: var(--pastel-blue-dark);
+}
+
+/* Badges Pastel */
+.badge-pastel-orange {
+  background: var(--pastel-orange);
+  color: #8B4513;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 180, 140, 0.3);
+}
+
+.badge-pastel-blue {
+  background: var(--pastel-blue);
+  color: #1E5A7D;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(135, 206, 235, 0.3);
+}
+
+.badge-pastel-green {
+  background: var(--pastel-green);
+  color: #2E7D32;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(200, 230, 201, 0.3);
+}
+
+.badge-pastel-pink {
+  background: var(--pastel-pink);
+  color: #C2185B;
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 209, 220, 0.3);
+}
+
+/* Alertas Pastel */
+.alert-pastel-success {
+  background: var(--pastel-green);
+  border: 2px solid #A5D6A7;
+  color: #2E7D32;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(200, 230, 201, 0.2);
+}
+
+.alert-pastel-danger {
+  background: var(--pastel-pink);
+  border: 2px solid #F8BBD0;
+  color: #C2185B;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(255, 209, 220, 0.2);
+}
+
+.alert-pastel-warning {
+  background: var(--pastel-yellow);
+  border: 2px solid #FFF59D;
+  color: #F57C00;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(255, 249, 196, 0.2);
+}
+
+.alert-pastel-info {
+  background: var(--pastel-blue-light);
+  border: 2px solid #B3E0FF;
+  color: #1E5A7D;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(179, 224, 255, 0.2);
+}
+
+/* Progress Bar Pastel */
+.progress-pastel {
+  background: var(--pastel-gray-light);
+  border-radius: 15px;
+  height: 20px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar-pastel-orange {
+  background: var(--gradient-warm);
+  border-radius: 15px;
+  transition: width 0.6s ease;
+}
+
+.progress-bar-pastel-blue {
+  background: var(--gradient-cool);
+  border-radius: 15px;
+  transition: width 0.6s ease;
+}
+
+.progress-bar-pastel-green {
+  background: linear-gradient(135deg, #C8E6C9 0%, #A5D6A7 100%);
+  border-radius: 15px;
+  transition: width 0.6s ease;
+}
+
+/* Inputs Pastel */
+.form-control-pastel {
+  border: 3px solid var(--pastel-blue);
+  border-radius: 15px;
+  padding: 12px 16px;
+  background: var(--pastel-white);
+  transition: all 0.3s ease;
+}
+
+.form-control-pastel:focus {
+  border-color: var(--pastel-blue-dark);
+  box-shadow: 0 0 0 0.2rem rgba(135, 206, 235, 0.25);
+  outline: none;
+}
+
+/* Títulos Decorativos */
+.title-pastel {
+  background: var(--gradient-mixed);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  text-shadow: 2px 2px 4px rgba(255, 180, 140, 0.1);
+}
+
+/* Contenedores con Sombra Suave */
+.container-pastel {
+  background: var(--pastel-white);
+  border-radius: 25px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(255, 180, 140, 0.15);
+}
+
+/* Iconos con Fondo Circular */
+.icon-circle-orange {
+  width: 60px;
+  height: 60px;
+  background: var(--gradient-warm);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 4px 8px rgba(255, 155, 118, 0.3);
+}
+
+.icon-circle-blue {
+  width: 60px;
+  height: 60px;
+  background: var(--gradient-cool);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+  box-shadow: 0 4px 8px rgba(107, 182, 224, 0.3);
+}
+
+/* Spinner Loading Pastel */
+.spinner-pastel {
+  border: 4px solid var(--pastel-orange-light);
+  border-top: 4px solid var(--pastel-orange-dark);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Decoraciones Flotantes */
+.float-decoration {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Efectos de Hover Suaves */
+.hover-lift {
+  transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(255, 180, 140, 0.2);
+}
+
+/* Bordes Redondeados Suaves */
+.rounded-pastel {
+  border-radius: 20px;
+}
+
+.rounded-pastel-lg {
+  border-radius: 30px;
+}
+
+/* Texto con Sombra Suave */
+.text-shadow-pastel {
+  text-shadow: 2px 2px 4px rgba(255, 180, 140, 0.2);
+}
+
+/* Divisores Decorativos */
+.divider-pastel {
+  height: 3px;
+  background: var(--gradient-mixed);
+  border-radius: 5px;
+  margin: 20px 0;
+}

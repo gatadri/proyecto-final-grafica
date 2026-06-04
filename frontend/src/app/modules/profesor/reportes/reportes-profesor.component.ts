@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { MLService } from '../../../services/ml.service';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -33,6 +34,36 @@ interface EstadisticasClase {
   rendimiento_semanal: { dia: string; aciertos: number; errores: number }[];
 }
 
+interface TemaProblematico {
+  tema: string;
+  tema_legible: string;
+  errores: number;
+  aciertos: number;
+  porcentaje_error: number;
+  tiempo_promedio_ms: number;
+  tarea_id: number;
+  tarea_titulo: string;
+}
+
+interface ReportePorSubtema {
+  subtema: string;
+  total_errores: number;
+  total_aciertos: number;
+  temas_problematicos: TemaProblematico[];
+}
+
+interface ReporteML {
+  nino: any;
+  padre: any;
+  profesor: any;
+  reporte_por_subtema: ReportePorSubtema[];
+  resumen: {
+    total_errores: number;
+    total_aciertos: number;
+    subtemas_con_dificultad: number;
+  };
+}
+
 @Component({
   selector: 'app-reportes-profesor',
   standalone: true,
@@ -44,13 +75,16 @@ export class ReportesProfesorComponent implements OnInit {
   estadisticasEstudiantes: EstadisticasEstudiante[] = [];
   estadisticasClase: EstadisticasClase | null = null;
   estudianteSeleccionado: EstadisticasEstudiante | null = null;
+  reporteML: ReporteML | null = null;
+  loadingReporteML = false;
   loading = true;
   generandoPDF = false;
   profesorId: number = 0;
 
   constructor(
     private api: ApiService,
-    private auth: AuthService
+    private auth: AuthService,
+    private mlService: MLService
   ) {}
 
   ngOnInit(): void {
@@ -78,10 +112,27 @@ export class ReportesProfesorComponent implements OnInit {
 
   seleccionarEstudiante(estudiante: EstadisticasEstudiante): void {
     this.estudianteSeleccionado = estudiante;
+    this.cargarReporteML(estudiante.id);
   }
 
   verClase(): void {
     this.estudianteSeleccionado = null;
+    this.reporteML = null;
+  }
+
+  cargarReporteML(ninoId: number): void {
+    this.loadingReporteML = true;
+    this.reporteML = null;
+    this.mlService.obtenerReporteDetallado(ninoId).subscribe({
+      next: (data) => {
+        this.reporteML = data;
+        this.loadingReporteML = false;
+      },
+      error: (err) => {
+        console.error('Error cargando reporte ML', err);
+        this.loadingReporteML = false;
+      }
+    });
   }
 
   async descargarPDF(): Promise<void> {
@@ -137,5 +188,28 @@ export class ReportesProfesorComponent implements OnInit {
     const minutos = Math.floor(ms / 60000);
     const segundos = Math.floor((ms % 60000) / 1000);
     return `${minutos}m ${segundos}s`;
+  }
+
+  getRecomendaciones(): string[] {
+    if (!this.reporteML) return [];
+    
+    const recs: string[] = [];
+    
+    for (const subtema of this.reporteML.reporte_por_subtema) {
+      if (subtema.total_errores >= 5) {
+        const temasTop = subtema.temas_problematicos
+          .slice(0, 2)
+          .map(t => t.tema_legible)
+          .join(' y ');
+        
+        recs.push(`Reforzar ${subtema.subtema}: especialmente ${temasTop}.`);
+      }
+    }
+    
+    if (recs.length === 0) {
+      recs.push('Continuar practicando regularmente para mantener el nivel.');
+    }
+    
+    return recs;
   }
 }

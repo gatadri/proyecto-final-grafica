@@ -1,11 +1,12 @@
 <div class="container-fluid py-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h5 class="fw-bold mb-0">
-      <i class="fas fa-chart-line text-primary me-2"></i>Reportes de Mis Hijos
+    <h5 class="fw-bold mb-0" style="color: #FF8C42;">
+      <i class="fas fa-chart-line me-2"></i>Reportes de Mis Hijos
     </h5>
     <button 
       (click)="descargarPDF()" 
-      class="btn btn-danger"
+      class="btn"
+      style="background: #E53935; color: white; border: none; padding: 10px 20px; border-radius: 8px;"
       [disabled]="loading || generandoPDF">
       <span *ngIf="!generandoPDF">
         <i class="fas fa-file-pdf me-2"></i>Descargar PDF
@@ -17,29 +18,33 @@
   </div>
 
   <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-primary"></div>
+    <div class="spinner-border" style="color: #4A90E2;"></div>
     <p class="mt-3">Cargando estadísticas...</p>
   </div>
 
   <div *ngIf="!loading && estadisticasGrupales">
     
     <!-- Selector de vista -->
-    <div class="card mb-4 border-0 shadow-sm">
+    <div class="card mb-4 border-0" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
       <div class="card-body">
         <div class="d-flex gap-2 flex-wrap">
           <button 
             (click)="verGrupal()" 
             class="btn"
-            [class.btn-primary]="!hijoSeleccionado"
-            [class.btn-outline-primary]="hijoSeleccionado">
+            [style.background]="!hijoSeleccionado ? '#4A90E2' : 'white'"
+            [style.color]="!hijoSeleccionado ? 'white' : '#4A90E2'"
+            [style.border]="!hijoSeleccionado ? 'none' : '2px solid #4A90E2'"
+            style="border-radius: 8px; padding: 8px 16px;">
             <i class="fas fa-users me-2"></i>Vista Grupal
           </button>
           <button 
             *ngFor="let hijo of estadisticasHijos"
             (click)="seleccionarHijo(hijo)" 
             class="btn"
-            [class.btn-success]="hijoSeleccionado?.id === hijo.id"
-            [class.btn-outline-success]="hijoSeleccionado?.id !== hijo.id">
+            [style.background]="hijoSeleccionado?.id === hijo.id ? '#FF8C42' : 'white'"
+            [style.color]="hijoSeleccionado?.id === hijo.id ? 'white' : '#FF8C42'"
+            [style.border]="hijoSeleccionado?.id === hijo.id ? 'none' : '2px solid #FF8C42'"
+            style="border-radius: 8px; padding: 8px 16px;">
             <i class="fas fa-user me-2"></i>{{ hijo.nombre }}
           </button>
         </div>
@@ -49,9 +54,9 @@
     <div id="reporte-contenido">
       
       <!-- Encabezado del reporte -->
-      <div class="card mb-4 border-0 shadow-sm">
+      <div class="card mb-4 border-0" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
         <div class="card-body text-center py-4">
-          <h3 class="fw-bold text-primary mb-2">
+          <h3 class="fw-bold mb-2" style="color: #2E5C8A;">
             {{ hijoSeleccionado ? 'Reporte Individual de ' + hijoSeleccionado.nombre : 'Reporte Grupal de Mis Hijos' }}
           </h3>
           <p class="text-muted mb-0">Fecha: {{ currentDate | date:'dd/MM/yyyy HH:mm' }}</p>
@@ -392,3 +397,134 @@
 
   </div>
 </div>
+
+        <!-- GESTIÓN DE APRENDIZAJE (ML) -->
+        <div class="card border-0 mt-4" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);" *ngIf="hijoSeleccionado">
+          <div class="card-header" style="background: #4A90E2; color: white; border-radius: 12px 12px 0 0;">
+            <h5 class="mb-0 fw-bold">
+              <i class="fas fa-brain me-2"></i>Gestión de Aprendizaje
+              <small class="ms-2 opacity-75">(Análisis con Inteligencia Artificial)</small>
+            </h5>
+          </div>
+          <div class="card-body">
+            
+            <div *ngIf="loadingReporteML" class="text-center py-5">
+              <div class="spinner-border text-primary mb-3"></div>
+              <p>Analizando patrones de errores...</p>
+            </div>
+
+            <div *ngIf="!loadingReporteML && reporteML">
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                  <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                      <h2 class="mb-0">{{ reporteML.resumen.total_errores }}</h2>
+                      <p class="mb-0">Total Errores Analizados</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                      <h2 class="mb-0">{{ reporteML.resumen.total_aciertos }}</h2>
+                      <p class="mb-0">Total Aciertos</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                      <h2 class="mb-0">{{ reporteML.resumen.subtemas_con_dificultad }}</h2>
+                      <p class="mb-0">Áreas con Dificultad</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="reporteML.reporte_por_subtema.length === 0" class="alert alert-success">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>¡Excelente!</strong> No se detectaron errores significativos. Su hijo está teniendo un buen desempeño.
+              </div>
+
+              <div *ngFor="let subtema of reporteML.reporte_por_subtema" class="mb-4">
+                <div class="card">
+                  <div class="card-header" 
+                       [class.bg-danger]="subtema.total_errores >= 5"
+                       [class.bg-warning]="subtema.total_errores >= 3 && subtema.total_errores < 5"
+                       [class.bg-info]="subtema.total_errores < 3"
+                       [class.text-white]="subtema.total_errores >= 3">
+                    <h6 class="mb-0">
+                      <i class="fas fa-calculator me-2"></i>
+                      {{ subtema.subtema | titlecase }}
+                      <span class="badge bg-light text-dark ms-2">
+                        {{ subtema.total_errores }} errores / {{ subtema.total_aciertos }} aciertos
+                      </span>
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-hover mb-0">
+                        <thead>
+                          <tr>
+                            <th>Tema Específico</th>
+                            <th class="text-center">Errores</th>
+                            <th class="text-center">Aciertos</th>
+                            <th class="text-center">% Error</th>
+                            <th class="text-center">Tiempo Promedio</th>
+                            <th>Tarea</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let tema of subtema.temas_problematicos">
+                            <td>
+                              <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                              <strong>{{ tema.tema_legible }}</strong>
+                            </td>
+                            <td class="text-center">
+                              <span class="badge bg-danger">{{ tema.errores }}</span>
+                            </td>
+                            <td class="text-center">
+                              <span class="badge bg-success">{{ tema.aciertos }}</span>
+                            </td>
+                            <td class="text-center">
+                              <div class="progress" style="height: 20px; min-width: 80px;">
+                                <div class="progress-bar bg-danger" 
+                                     [style.width.%]="tema.porcentaje_error">
+                                  {{ tema.porcentaje_error }}%
+                                </div>
+                              </div>
+                            </td>
+                            <td class="text-center">
+                              {{ formatearTiempo(tema.tiempo_promedio_ms) }}
+                            </td>
+                            <td>
+                              <small class="text-muted">{{ tema.tarea_titulo }}</small>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info" *ngIf="reporteML.reporte_por_subtema.length > 0">
+                <h6>
+                  <i class="fas fa-lightbulb me-2"></i>
+                  Recomendaciones para Practicar en Casa
+                </h6>
+                <ul class="mb-0">
+                  <li *ngFor="let rec of getRecomendaciones()">{{ rec }}</li>
+                </ul>
+              </div>
+
+            </div>
+
+            <div *ngIf="!loadingReporteML && !reporteML" class="alert alert-warning">
+              <i class="fas fa-info-circle me-2"></i>
+              No hay suficientes datos para generar el reporte de aprendizaje. Su hijo debe completar más tareas.
+            </div>
+
+          </div>
+        </div>
