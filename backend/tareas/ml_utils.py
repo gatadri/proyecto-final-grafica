@@ -1,14 +1,29 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'ml'))
+
+# Configurar la ruta correcta para los modelos ML
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ML_PATH = os.path.join(PROJECT_ROOT, '..', 'ml')  # Subir un nivel más desde backend/tareas
+
+if os.path.exists(ML_PATH) and ML_PATH not in sys.path:
+    sys.path.insert(0, ML_PATH)
 
 import numpy as np
+
+# Intentar cargar modelos ML
+ML_LOADED = False
+predict_ffn = None
+predict_rnn = None
+num_features = None
+
 try:
-    from ml.predict import predict_ffn, predict_rnn, num_features
+    from predict import predict_ffn, predict_rnn, num_features
     ML_LOADED = True
+    print("[OK] Modelos ML cargados exitosamente")
 except Exception as e:
-    print(f"Error cargando modelos ML: {e}")
-    ML_LOADED = False
+    print(f"[AVISO] Modelos ML no disponibles: {e}")
+    print(f"[INFO] Ruta ML intentada: {ML_PATH}")
+    print("[INFO] La detección básica funcionará sin ML")
 
 
 def analizar_ejercicio(data):
@@ -28,60 +43,80 @@ def analizar_ejercicio(data):
         return None
 
 
-def detectar_distraccion(historial_estudiante):
+def detectar_distraccion(historial_estudiante, tiempo_promedio_historico=None):
     """
     Detecta si el estudiante está distraído basado en su historial reciente
     historial_estudiante: lista de diccionarios con las últimas respuestas (mínimo 3)
+    tiempo_promedio_historico: tiempo promedio histórico del niño (opcional)
     """
-    if not ML_LOADED or len(historial_estudiante) < 3:
+    # IMPORTANTE: Esta función funciona incluso sin modelos ML cargados
+    if len(historial_estudiante) < 1:
         return {'requiere_descanso': False, 'focus_score': 1.0, 'motivo': None}
     
     try:
         # Verificar errores consecutivos
         errores_consecutivos = sum(1 for h in historial_estudiante[-5:] if h.get('correct', 1) == 0)
         
-        # Verificar tiempo excesivo
-        tiempos = [h.get('time_spent_ms', 0) for h in historial_estudiante if h.get('time_spent_ms', 0) > 0]
-        tiempo_promedio = np.mean(tiempos) if tiempos else 5000
+        # Verificar tiempo excesivo basado en promedio histórico
         ultimo_tiempo = historial_estudiante[-1].get('time_spent_ms', 0)
-        tiempo_excesivo = ultimo_tiempo > (tiempo_promedio * 3)
+        tiempo_excesivo = False
+        promedio_usado = tiempo_promedio_historico
+        
+        if tiempo_promedio_historico and tiempo_promedio_historico > 0:
+            # Usar el promedio histórico del niño (más preciso)
+            tiempo_excesivo = ultimo_tiempo > (tiempo_promedio_historico * 3)
+        elif len(historial_estudiante) >= 3:
+            # Fallback: usar promedio de historial reciente
+            tiempos = [h.get('time_spent_ms', 0) for h in historial_estudiante if h.get('time_spent_ms', 0) > 0]
+            if tiempos:
+                promedio_usado = np.mean(tiempos)
+                tiempo_excesivo = ultimo_tiempo > (promedio_usado * 3)
         
         # Si hay 3+ errores seguidos o tiempo excesivo, mostrar pantalla de distracción
         if errores_consecutivos >= 3:
             return {
                 'requiere_descanso': True,
                 'focus_score': 0.3,
-                'motivo': 'errores_consecutivos'
+                'motivo': 'errores_consecutivos',
+                'detalles': f'{errores_consecutivos} errores consecutivos'
             }
         
         if tiempo_excesivo:
             return {
                 'requiere_descanso': True,
                 'focus_score': 0.3,
-                'motivo': 'tiempo_excesivo'
+                'motivo': 'tiempo_excesivo',
+                'detalles': f'Tardó {ultimo_tiempo}ms (promedio: {int(promedio_usado) if promedio_usado else "N/A"}ms)'
             }
         
-        # Tomar las últimas 3 entradas
-        ultimas_3 = historial_estudiante[-3:]
+        # Si los modelos ML están cargados, usar análisis avanzado
+        if ML_LOADED and len(historial_estudiante) >= 5:
+            # Tomar las últimas 5 entradas (el modelo RNN requiere 5)
+            ultimas_5 = historial_estudiante[-5:]
+            
+            # Convertir a array para el modelo RNN
+            secuencia = []
+            for entrada in ultimas_5:
+                fila = [entrada.get(f, 0) for f in num_features]
+                secuencia.append(fila)
+            
+            # Predecir focus_score
+            focus_scores = predict_rnn(secuencia)
+            focus_promedio = np.mean(focus_scores)
+            
+            # Si el focus es bajo (< 0.4), requiere descanso
+            requiere_descanso = focus_promedio < 0.4
+            
+            return {
+                'requiere_descanso': requiere_descanso,
+                'focus_score': float(focus_promedio),
+                'motivo': 'bajo_focus' if requiere_descanso else None,
+                'detalles': f'Focus score: {focus_promedio:.2f}' if requiere_descanso else None
+            }
         
-        # Convertir a array para el modelo RNN
-        secuencia = []
-        for entrada in ultimas_3:
-            fila = [entrada.get(f, 0) for f in num_features]
-            secuencia.append(fila)
+        # Sin modelos ML, solo retornar que no hay distracción
+        return {'requiere_descanso': False, 'focus_score': 1.0, 'motivo': None}
         
-        # Predecir focus_score
-        focus_scores = predict_rnn(secuencia)
-        focus_promedio = np.mean(focus_scores)
-        
-        # Si el focus es bajo (< 0.4), requiere descanso
-        requiere_descanso = focus_promedio < 0.4
-        
-        return {
-            'requiere_descanso': requiere_descanso,
-            'focus_score': float(focus_promedio),
-            'motivo': 'bajo_focus' if requiere_descanso else None
-        }
     except Exception as e:
         print(f"Error en detección de distracción: {e}")
         return {'requiere_descanso': False, 'focus_score': 1.0, 'motivo': None}

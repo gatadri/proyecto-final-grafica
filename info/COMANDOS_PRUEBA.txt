@@ -1,0 +1,64 @@
+# COMANDOS DE PRUEBA RAPIDA
+# Copia y pega estos comandos para probar la funcionalidad
+
+# ============================================
+# 1. VERIFICAR DATOS DE LOS NIÑOS
+# ============================================
+cd c:\laragon\www\proyecto_adri_angular\backend
+python verificar_datos_tiempo.py
+
+# ============================================
+# 2. INICIAR SERVICIOS (2 TERMINALES)
+# ============================================
+
+# Terminal 1 - Backend:
+cd c:\laragon\www\proyecto_adri_angular\backend
+python manage.py runserver
+
+# Terminal 2 - Frontend:
+cd c:\laragon\www\proyecto_adri_angular\frontend
+ng serve
+
+# ============================================
+# 3. ABRIR EN NAVEGADOR
+# ============================================
+# Abre: http://localhost:4200
+# Login como niño (usa el PIN)
+# Presiona F12 para abrir consola
+# Completa ejercicios y observa los logs
+
+# ============================================
+# 4. PROBAR API DIRECTAMENTE (OPCIONAL)
+# ============================================
+# Reemplaza nino_id y ejercicio_id por valores reales:
+
+curl -X POST http://localhost:8000/api/tareas/ml/analizar-respuesta -H "Content-Type: application/json" -d "{\"nino_id\": 17, \"ejercicio_id\": 10, \"tiempo_ms\": 50000, \"correcto\": false, \"tab_blur_count\": 0, \"idle_ms\": 0, \"erratic_clicks\": 0}"
+
+# ============================================
+# 5. VER ESTRUCTURA DE ARCHIVOS
+# ============================================
+# Archivos modificados:
+# - backend/tareas/views.py
+# - frontend/src/app/modules/nino/tarea/nino-tarea.component.ts
+
+# Archivos nuevos:
+# - backend/verificar_datos_tiempo.py
+# - backend/test_deteccion_tiempo.py
+# - info/COMPLETADO_DETECCION_TIEMPO.md
+# - RESUMEN_DETECCION_TIEMPO.txt
+
+# ============================================
+# ¿QUE BUSCAR?
+# ============================================
+# En la consola del navegador (F12) verás:
+# ═══════════════════════════════════
+# 📊 ANÁLISIS ML COMPLETADO
+# ⏱️  Tiempo actual: 5000ms
+# 📈 Promedio histórico: 4200ms
+# ⚠️  Triple del promedio: 12600ms
+# ✅ Normal (margen de 7600ms)
+# ═══════════════════════════════════
+
+# Si tardas mucho (3x promedio):
+# 🛑 PANTALLA DE DESCANSO ACTIVADA
+# 📋 Razón: tiempo_excesivo

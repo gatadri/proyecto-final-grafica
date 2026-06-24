@@ -9,10 +9,12 @@ class NinoSerializer(serializers.ModelSerializer):
     tareas = TareaSerializer(many=True, read_only=True)
     estadisticas = serializers.SerializerMethodField()
     profesor = serializers.SerializerMethodField()
+    padre = serializers.SerializerMethodField()
+    items_comprados = serializers.SerializerMethodField()
 
     class Meta:
         model = Nino
-        fields = ['id', 'nombre', 'apellido', 'pin', 'monedas', 'nivel', 'experiencia', 'avatar', 'racha_dias', 'tareas', 'estadisticas', 'profesor']
+        fields = ['id', 'nombre', 'apellido', 'edad', 'grado', 'pin', 'monedas', 'nivel', 'experiencia', 'avatar', 'racha_dias', 'tareas', 'estadisticas', 'profesor', 'padre', 'items_comprados']
 
     def get_estadisticas(self, obj):
         return {
@@ -31,6 +33,26 @@ class NinoSerializer(serializers.ModelSerializer):
                 'email': obj.profesor.email
             }
         return None
+    
+    def get_padre(self, obj):
+        if obj.padre:
+            return {
+                'id': obj.padre.id,
+                'nombre': obj.padre.nombre,
+                'apellido': obj.padre.apellido,
+                'email': obj.padre.email
+            }
+        return None
+    
+    def get_items_comprados(self, obj):
+        from tareas.models import SkinComprada, StickerComprado
+        skins = SkinComprada.objects.filter(nino=obj).count()
+        stickers = StickerComprado.objects.filter(nino=obj).count()
+        return {
+            'skins': skins,
+            'stickers': stickers,
+            'total': skins + stickers
+        }
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,7 +64,21 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_hijos(self, obj):
         if obj.role == 'padre':
-            return NinoSerializer(obj.hijos.all(), many=True).data
+            hijos = obj.hijos.all()
+            return [{
+                'id': hijo.id,
+                'nombre': hijo.nombre,
+                'apellido': hijo.apellido,
+                'pin': hijo.pin,
+                'edad': hijo.edad,
+                'grado': hijo.grado,
+                'profesor': {
+                    'id': hijo.profesor.id,
+                    'nombre': hijo.profesor.nombre,
+                    'apellido': hijo.profesor.apellido,
+                    'email': hijo.profesor.email
+                } if hijo.profesor else None
+            } for hijo in hijos]
         return []
 
 

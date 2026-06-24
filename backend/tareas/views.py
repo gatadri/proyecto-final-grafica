@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import Tarea, Nino, ProgresoTarea, EjercicioProgreso, Logro, LogroNino, ProgresoPractica, EjercicioPractica, Skin, SkinComprada, Sticker, StickerComprado
+from .models import Tarea, Nino, ProgresoTarea, EjercicioProgreso, Logro, LogroNino, ProgresoPractica, EjercicioPractica, Skin, SkinComprada, Sticker, StickerComprado, Ejercicio, PrediccionError, EventoDistraccion, AnalisisErrorTema
 from .serializers import TareaSerializer, TareaCreateSerializer, NinoSerializer, EjercicioProgresoSerializer, LogroSerializer, LogroNinoSerializer, ProgresoPracticaSerializer, EjercicioPracticaSerializer, SkinSerializer, SkinCompradaSerializer, StickerSerializer, StickerCompradoSerializer
 from users.permissions import IsProfesor
 from django.utils import timezone
@@ -186,7 +186,22 @@ class CompletarTareaView(APIView):
                 progreso.tiempo_total_ms   = tiempo_total_ms
                 progreso.save()
 
-            nino.monedas     += puntos
+            # Sistema de recompensas mejorado
+            monedas_base = puntos
+            
+            # Bonus por completar sin errores (tarea perfecta)
+            bonus_perfecto = 0
+            if cantidad_errores == 0 and cantidad_aciertos > 0:
+                bonus_perfecto = int(puntos * 0.5)  # 50% bonus
+            
+            # Bonus por racha
+            bonus_racha = 0
+            if nino.racha_dias > 0:
+                bonus_racha = min(nino.racha_dias * 2, 50)  # Max 50 monedas por racha
+            
+            total_monedas = monedas_base + bonus_perfecto + bonus_racha
+            
+            nino.monedas     += total_monedas
             nino.racha_dias  += 1
             nino.experiencia += puntos
             nino.nivel        = max(nino.nivel, (nino.experiencia // 100) + 1)
@@ -195,7 +210,17 @@ class CompletarTareaView(APIView):
             logros_desbloqueados = verificar_y_desbloquear_logros(nino)
             logros_data = LogroNinoSerializer(logros_desbloqueados, many=True).data
 
-            return Response({'message': 'Tarea completada', 'monedas': nino.monedas, 'logros': logros_data})
+            return Response({
+                'message': 'Tarea completada',
+                'monedas': nino.monedas,
+                'monedas_ganadas': {
+                    'base': monedas_base,
+                    'bonus_perfecto': bonus_perfecto,
+                    'bonus_racha': bonus_racha,
+                    'total': total_monedas
+                },
+                'logros': logros_data
+            })
         except (Nino.DoesNotExist, Tarea.DoesNotExist):
             return Response({'error': 'Nino or Tarea not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -327,9 +352,18 @@ class ProgresoPracticaView(APIView):
         if serializer.is_valid():
             progreso = serializer.save()
             
-            # Actualizar estadísticas del niño
+            # Actualizar estadísticas del niño con sistema de bonus
             nino = progreso.nino
-            nino.monedas += progreso.puntos_obtenidos
+            monedas_base = progreso.puntos_obtenidos
+            
+            # Bonus por práctica perfecta
+            bonus_perfecto = 0
+            if progreso.cantidad_errores == 0 and progreso.cantidad_aciertos > 0:
+                bonus_perfecto = int(monedas_base * 0.3)  # 30% bonus en práctica
+            
+            total_monedas = monedas_base + bonus_perfecto
+            
+            nino.monedas += total_monedas
             nino.experiencia += progreso.puntos_obtenidos
             nino.nivel = max(nino.nivel, (nino.experiencia // 100) + 1)
             nino.save()
@@ -338,12 +372,23 @@ class ProgresoPracticaView(APIView):
             logros_desbloqueados = verificar_y_desbloquear_logros(nino)
             logros_data = LogroNinoSerializer(logros_desbloqueados, many=True).data
             
+            # Actualizar recomendaciones si hay errores
+            actualizar_recomendaciones = False
+            if progreso.cantidad_errores > 0:
+                actualizar_recomendaciones = True
+            
             return Response({
                 'progreso': serializer.data,
                 'monedas': nino.monedas,
+                'monedas_ganadas': {
+                    'base': monedas_base,
+                    'bonus_perfecto': bonus_perfecto,
+                    'total': total_monedas
+                },
                 'nivel': nino.nivel,
                 'experiencia': nino.experiencia,
-                'logros': logros_data
+                'logros': logros_data,
+                'actualizar_recomendaciones': actualizar_recomendaciones
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -658,7 +703,18 @@ class AnalizarRespuestaView(APIView):
             nino = Nino.objects.get(id=nino_id)
             ejercicio = Ejercicio.objects.get(id=ejercicio_id) if ejercicio_id else None
             
-            # Obtener historial reciente para calcular errores consecutivos y tiempo excesivo
+            # Calcular tiempo promedio histórico del niño (últimos 30 ejercicios)
+            historial_tiempos = EjercicioProgreso.objects.filter(
+                student=nino,
+                time_spent_ms__gt=0,
+                time_spent_ms__lt=180000  # Excluir tiempos mayores a 3 minutos (outliers)
+            ).order_by('-created_at')[:30].values_list('time_spent_ms', flat=True)
+            
+            tiempo_promedio_historico = None
+            if historial_tiempos and len(historial_tiempos) >= 5:
+                tiempo_promedio_historico = sum(historial_tiempos) / len(historial_tiempos)
+            
+            # Obtener historial reciente para calcular errores consecutivos
             historial_raw = list(EjercicioProgreso.objects.filter(student=nino).order_by('-created_at')[:10].values(
                 'difficulty', 'time_spent_ms', 'attempts', 'used_hint', 'n_hints',
                 'fast_response', 'correct', 'tab_blur_count', 'idle_ms', 'erratic_clicks'
@@ -675,12 +731,16 @@ class AnalizarRespuestaView(APIView):
             if not correcto:
                 consecutive_errors += 1
             
-            # Calcular si el tiempo es excesivo
-            tiempos = [h.get('time_spent_ms', 0) for h in historial_raw if h.get('time_spent_ms', 0) > 0]
+            # Calcular si el tiempo es excesivo basado en promedio histórico
             excessive_time = 0
-            if tiempos and len(tiempos) > 0:
-                tiempo_promedio = sum(tiempos) / len(tiempos)
-                excessive_time = 1 if tiempo_ms > (tiempo_promedio * 3) else 0
+            if tiempo_promedio_historico and tiempo_promedio_historico > 0:
+                excessive_time = 1 if tiempo_ms > (tiempo_promedio_historico * 3) else 0
+            elif historial_raw:
+                # Fallback: usar historial reciente si no hay suficiente histórico
+                tiempos = [h.get('time_spent_ms', 0) for h in historial_raw if h.get('time_spent_ms', 0) > 0]
+                if tiempos and len(tiempos) > 0:
+                    tiempo_promedio = sum(tiempos) / len(tiempos)
+                    excessive_time = 1 if tiempo_ms > (tiempo_promedio * 3) else 0
             
             # Crear features para el ML
             features = {
@@ -740,8 +800,8 @@ class AnalizarRespuestaView(APIView):
                 historial_completo.append(h)
             historial_completo.append(features)
             
-            # Detectar distracción (incluye lógica de errores consecutivos y tiempo excesivo)
-            distraccion = detectar_distraccion(historial_completo)
+            # Detectar distracción con tiempo promedio histórico
+            distraccion = detectar_distraccion(historial_completo, tiempo_promedio_historico)
             
             # Guardar evento de distracción si es necesario
             if distraccion['requiere_descanso']:
@@ -758,7 +818,13 @@ class AnalizarRespuestaView(APIView):
                 'prediccion': resultado,
                 'distraccion': distraccion,
                 'consecutive_errors': consecutive_errors,
-                'excessive_time': excessive_time
+                'excessive_time': excessive_time,
+                'tiempo_promedio_historico': tiempo_promedio_historico,
+                'debug': {
+                    'tiempo_actual_ms': tiempo_ms,
+                    'triple_promedio_ms': tiempo_promedio_historico * 3 if tiempo_promedio_historico else None,
+                    'cantidad_datos_historicos': len(historial_tiempos) if historial_tiempos else 0
+                }
             })
             
         except Nino.DoesNotExist:

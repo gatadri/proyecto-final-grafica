@@ -86,9 +86,9 @@ export class NinoTareaComponent implements OnInit, OnDestroy {
   iniciarTimerTiempoLimite(): void {
     if (this.tiempoLimiteTimer) clearTimeout(this.tiempoLimiteTimer);
     this.tiempoLimiteTimer = setTimeout(() => {
-      // Tardó más de 2 minutos - mostrar pantalla de descanso
-      this.mostrarPantallaDescanso('Tiempo límite excedido');
-    }, 120000); // 2 minutos
+      // Tardó más de 1 minuto - mostrar pantalla de descanso
+      this.mostrarPantallaDescanso('Tiempo límite excedido (1 minuto)');
+    }, 60000); // 1 minuto
   }
 
   get ejercicio(): any { return this.ejercicios[this.ejercicioActual]; }
@@ -144,11 +144,48 @@ export class NinoTareaComponent implements OnInit, OnDestroy {
       erratic_clicks: this.erraticClicks
     }).subscribe({
       next: (resultado) => {
-        console.log('Análisis ML:', resultado);
+        console.log('═══════════════════════════════════');
+        console.log('📊 ANÁLISIS ML COMPLETADO');
+        
         const dist = resultado.distraccion || {};
-        if (dist.requiere_descanso || (dist.focus_score !== undefined && dist.focus_score < 0.4)) {
-          this.mostrarPantallaDescanso(`${dist.motivo || 'Focus score bajo'} (score: ${dist.focus_score})`);
+        const debug = resultado.debug || {};
+        
+        // Mostrar información de debug en consola
+        if (debug.tiempo_actual_ms !== undefined) {
+          console.log(`⏱️  Tiempo actual: ${debug.tiempo_actual_ms}ms`);
+          
+          if (resultado.tiempo_promedio_historico) {
+            console.log(`📈 Promedio histórico: ${Math.round(resultado.tiempo_promedio_historico)}ms`);
+            console.log(`⚠️  Triple del promedio: ${Math.round(debug.triple_promedio_ms)}ms`);
+            console.log(`📚 Datos históricos: ${debug.cantidad_datos_historicos} ejercicios`);
+            
+            const margen = debug.triple_promedio_ms - debug.tiempo_actual_ms;
+            if (margen > 0) {
+              console.log(`✅ Normal (margen de ${Math.round(margen)}ms)`);
+            } else {
+              console.log(`🛑 TIEMPO EXCESIVO (excedió por ${Math.round(Math.abs(margen))}ms)`);
+            }
+          } else {
+            console.log(`⚠️  Sin historial suficiente (usando detección básica)`);
+          }
         }
+        
+        if (dist.requiere_descanso) {
+          const motivo = dist.motivo || 'Distracción detectada';
+          const detalles = dist.detalles || '';
+          console.log('═══════════════════════════════════');
+          console.log('🛑 PANTALLA DE DESCANSO ACTIVADA');
+          console.log(`📋 Razón: ${motivo}`);
+          console.log(`   Detalles: ${detalles}`);
+          this.mostrarPantallaDescanso(`${motivo} - ${detalles}`);
+        } else if (dist.focus_score !== undefined && dist.focus_score < 0.4) {
+          console.log('⚠️ Focus score bajo detectado: ' + dist.focus_score);
+          this.mostrarPantallaDescanso(`Focus score bajo (${dist.focus_score.toFixed(2)})`);
+        } else {
+          console.log('✅ Todo normal - sin distracción detectada');
+        }
+        
+        console.log('═══════════════════════════════════');
       },
       error: err => console.error('Error analizando respuesta ML', err)
     });
@@ -203,7 +240,13 @@ export class NinoTareaComponent implements OnInit, OnDestroy {
   }
 
   mostrarPantallaDescanso(razon: string): void {
-    console.log('Mostrando pantalla de descanso. Razón:', razon);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🛑 PANTALLA DE DESCANSO ACTIVADA');
+    console.log(`📋 Razón: ${razon}`);
+    console.log(`👤 Niño: ${this.nino.nombre}`);
+    console.log(`📝 Ejercicio: ${this.ejercicioActual + 1}/${this.ejercicios.length}`);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    
     if (this.pantallaDescanso) {
       this.pantallaDescanso.iniciarDescanso();
     }

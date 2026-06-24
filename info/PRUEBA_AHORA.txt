@@ -1,0 +1,94 @@
+###############################################################################
+#                                                                             #
+#                  PRUEBA ESTO AHORA - 3 MINUTOS                              #
+#                                                                             #
+###############################################################################
+
+PASO 1: ABRIR 2 TERMINALES
+===========================
+
+Terminal 1 - Backend:
+  cd c:\laragon\www\proyecto_adri_angular\backend
+  python manage.py runserver
+
+Terminal 2 - Frontend:
+  cd c:\laragon\www\proyecto_adri_angular\frontend
+  ng serve
+
+
+PASO 2: ABRIR NAVEGADOR
+========================
+
+1. Abre: http://localhost:4200
+
+2. Login como:
+   - Usuario: Alejandra (PIN: buscar en base de datos)
+   - Usuario: Elena (PIN: buscar en base de datos)
+
+3. CRITICO: Presiona F12 para abrir consola
+
+
+PASO 3: HACER UN EJERCICIO
+===========================
+
+1. Click en cualquier tarea
+2. Responde UN ejercicio normalmente
+3. Mira la consola - veras:
+
+   ═══════════════════════════════════
+   📊 ANALISIS ML COMPLETADO
+   ⏱️  Tiempo actual: 5000ms
+   📈 Promedio historico: 8700ms
+   ⚠️  Triple del promedio: 26100ms
+   ✅ Normal
+   ═══════════════════════════════════
+
+
+PASO 4: ACTIVAR LA PANTALLA
+============================
+
+OPCION MAS FACIL (GARANTIZADA):
+
+  1. Inicia otro ejercicio
+  2. NO RESPONDAS - SOLO ESPERA
+  3. Espera 60 segundos (1 minuto)
+  4. BOOM! Pantalla de descanso aparece
+
+OPCION ALTERNATIVA:
+
+  Para Alejandra:
+    - Espera mas de 26 segundos antes de responder
+
+  Para Elena:
+    - Espera mas de 56 segundos antes de responder
+
+
+QUE VERAS EN CONSOLA:
+======================
+
+═══════════════════════════════════
+🛑 PANTALLA DE DESCANSO ACTIVADA
+📋 Razon: tiempo_excesivo
+   Detalles: Tardo XXXXXms (promedio: XXXXms)
+═══════════════════════════════════
+
+
+DATOS ACTUALES:
+===============
+
+ALEJANDRA:
+  - Promedio: 8.7 segundos
+  - Umbral: 26.1 segundos
+  - Timer: 60 segundos
+
+ELENA:
+  - Promedio: 18.7 segundos
+  - Umbral: 56.1 segundos
+  - Timer: 60 segundos
+
+
+###############################################################################
+#                                                                             #
+#  SI NO FUNCIONA CON EL TIEMPO 3X, EL TIMER DE 60 SEGUNDOS LO GARANTIZA     #
+#                                                                             #
+###############################################################################

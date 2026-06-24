@@ -1,0 +1,111 @@
+###############################################################################
+#                                                                             #
+#                     INFORMACION DE ACCESO - PRUEBAS                         #
+#                                                                             #
+###############################################################################
+
+USUARIOS DE PRUEBA:
+===================
+
+ALEJANDRA
+---------
+PIN: 8778
+Tiempo promedio: 8.7 segundos
+Umbral 3x: 26.1 segundos
+Registros: 35
+
+ELENA FLORES
+------------
+PIN: 1241
+Tiempo promedio: 18.7 segundos
+Umbral 3x: 56.1 segundos
+Registros: 35
+
+
+COMO ACCEDER:
+=============
+
+1. Abre: http://localhost:4200
+
+2. Click en "Acceso Niños"
+
+3. Ingresa el PIN:
+   - 8778 para Alejandra
+   - 1241 para Elena
+
+4. Presiona F12 (consola del navegador)
+
+5. Entra a una tarea
+
+
+COMO ACTIVAR LA PANTALLA:
+==========================
+
+METODO 1: Timer de 1 minuto (MAS FACIL)
+----------------------------------------
+1. Inicia un ejercicio
+2. NO HAGAS NADA por 60 segundos
+3. La pantalla aparecerá automáticamente
+
+METODO 2: Tiempo 3x (Personalizado)
+------------------------------------
+Para Alejandra:
+  - Espera más de 26 segundos antes de responder
+
+Para Elena:
+  - Espera más de 56 segundos antes de responder
+
+METODO 3: Errores consecutivos
+-------------------------------
+- Comete 3 errores seguidos
+- La pantalla aparece inmediatamente
+
+
+QUE VERAS:
+==========
+
+EN LA CONSOLA (F12):
+═══════════════════════════════════
+📊 ANALISIS ML COMPLETADO
+⏱️  Tiempo actual: 5000ms
+📈 Promedio historico: 8700ms
+⚠️  Triple del promedio: 26100ms
+📚 Datos historicos: 30 ejercicios
+✅ Normal (margen de 21100ms)
+═══════════════════════════════════
+
+CUANDO SE ACTIVA:
+═══════════════════════════════════
+🛑 PANTALLA DE DESCANSO ACTIVADA
+📋 Razon: tiempo_excesivo
+   Detalles: Tardo 30000ms (promedio: 8700ms)
+═══════════════════════════════════
+
+EN LA PANTALLA:
+- Aparece la pantalla de descanso
+- Con mensaje motivacional
+- Cuenta regresiva de 30 segundos
+- Opcion de continuar
+
+
+SCRIPTS UTILES:
+===============
+
+Ver estadisticas:
+  cd backend
+  python probar_deteccion_real.py
+
+Crear mas datos:
+  cd backend
+  python llenar_datos_prueba.py
+
+Ver datos actuales:
+  cd backend
+  python verificar_datos_tiempo.py
+
+
+###############################################################################
+#                                                                             #
+#  RECOMENDACION: Usa el metodo 1 (timer de 1 minuto) - Es el mas facil      #
+#                                                                             #
+###############################################################################

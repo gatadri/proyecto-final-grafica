@@ -6,9 +6,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, NinoSerializer
 from .permissions import IsDirector, IsPadre
-from tareas.models import Nino, ProgresoTarea, ProgresoPractica
+from tareas.models import Nino, ProgresoTarea, ProgresoPractica, LogroNino, Tarea
 from django.db.models import Count, Sum, Avg, Q
 from datetime import datetime, timedelta
+from django.contrib.contenttypes.models import ContentType
 
 
 class RegisterView(APIView):
@@ -42,9 +43,7 @@ class LoginView(APIView):
 class UsuariosView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsDirector]
     serializer_class = UserSerializer
-    
-    def get_queryset(self):
-        return User.objects.all().prefetch_related('hijos', 'hijos__profesor')
+    queryset = User.objects.all()
 
 
 class UsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -212,6 +211,9 @@ class EstadisticasHijosPadreView(APIView):
                     'id': hijo.id,
                     'nombre': hijo.nombre,
                     'apellido': hijo.apellido,
+                    'edad': hijo.edad,
+                    'grado': hijo.grado,
+                    'avatar': hijo.avatar,
                     'nivel': hijo.nivel,
                     'experiencia': hijo.experiencia,
                     'monedas': hijo.monedas,
@@ -332,6 +334,9 @@ class EstadisticasClaseProfesorView(APIView):
                     'id': estudiante.id,
                     'nombre': estudiante.nombre,
                     'apellido': estudiante.apellido,
+                    'edad': estudiante.edad,
+                    'grado': estudiante.grado,
+                    'avatar': estudiante.avatar,
                     'nivel': estudiante.nivel,
                     'experiencia': estudiante.experiencia,
                     'monedas': estudiante.monedas,
@@ -411,3 +416,67 @@ class EstadisticasClaseProfesorView(APIView):
             
         except User.DoesNotExist:
             return Response({'error': 'Profesor no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class LogsActividadView(APIView):
+    permission_classes = [IsAuthenticated, IsDirector]
+
+    def get(self, request):
+        logs = []
+        
+        # Tareas completadas recientes
+        progresos_tareas = ProgresoTarea.objects.filter(
+            completada=True,
+            fecha_completada__isnull=False
+        ).select_related('nino', 'tarea', 'tarea__profesor').order_by('-fecha_completada')[:30]
+        
+        for progreso in progresos_tareas:
+            logs.append({
+                'fecha': progreso.fecha_completada.strftime('%Y-%m-%d %H:%M'),
+                'usuario': f"{progreso.nino.nombre} {progreso.nino.apellido}",
+                'descripcion': f'Completó tarea "{progreso.tarea.titulo}" ({progreso.puntos_obtenidos} pts)',
+                'tipo': 'tarea'
+            })
+        
+        # Prácticas completadas recientes
+        progresos_practica = ProgresoPractica.objects.filter(
+            completada=True
+        ).select_related('nino').order_by('-fecha_practica')[:20]
+        
+        for progreso in progresos_practica:
+            logs.append({
+                'fecha': progreso.fecha_practica.strftime('%Y-%m-%d %H:%M'),
+                'usuario': f"{progreso.nino.nombre} {progreso.nino.apellido}",
+                'descripcion': f'Completó práctica libre ({progreso.puntos_obtenidos} pts)',
+                'tipo': 'practica'
+            })
+        
+        # Logros obtenidos recientes
+        logros = LogroNino.objects.select_related(
+            'nino', 'logro'
+        ).order_by('-fecha_desbloqueado')[:20]
+        
+        for logro in logros:
+            logs.append({
+                'fecha': logro.fecha_desbloqueado.strftime('%Y-%m-%d %H:%M'),
+                'usuario': f"{logro.nino.nombre} {logro.nino.apellido}",
+                'descripcion': f'Obtuvo logro "{logro.logro.nombre}"',
+                'tipo': 'logro'
+            })
+        
+        # Tareas creadas recientemente
+        tareas = Tarea.objects.select_related('profesor').order_by('-created_at')[:15]
+        
+        for tarea in tareas:
+            logs.append({
+                'fecha': tarea.created_at.strftime('%Y-%m-%d %H:%M'),
+                'usuario': f"{tarea.profesor.nombre} {tarea.profesor.apellido}",
+                'descripcion': f'Creó la tarea "{tarea.titulo}"',
+                'tipo': 'sistema'
+            })
+        
+        # Ordenar todos los logs por fecha descendente
+        logs.sort(key=lambda x: x['fecha'], reverse=True)
+        
+        # Retornar solo los últimos 50
+        return Response(logs[:50])
